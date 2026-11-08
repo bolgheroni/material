@@ -1,0 +1,1262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ML Classification Study Guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+/* Layout idea: one reading column, a sticky chapter bar, each lecture = concept blocks + worked examples + exam traps. */
+:root{
+  --bg:#f5f6f8; --surface:#ffffff; --sunk:#eceef3; --ink:#171a24; --muted:#586074; --line:#d9dce6;
+  --accent:#2c4bb8; --accent-soft:#e3e8fa;
+  --ex:#0e6f66; --ex-soft:#dff3ef;
+  --trap:#9a4b08; --trap-soft:#fbeedc;
+  --go:#6b3fb0; --go-soft:#ece4f8;
+  --code:#eef0f5; --good:#1f7a3d; --bad:#b3362f;
+  --display:"Fraunces", Georgia, serif; --body:"IBM Plex Sans", system-ui, sans-serif; --mono:"IBM Plex Mono", ui-monospace, monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#11141b; --surface:#181c26; --sunk:#202534; --ink:#e6e9f1; --muted:#9aa2b7; --line:#2b3142;
+  --accent:#92a7f5; --accent-soft:#1f2a4d; --ex:#62cbbd; --ex-soft:#14302c; --trap:#f0b36a; --trap-soft:#352816;
+  --go:#c3a4f0; --go-soft:#2a2040; --code:#1f2433; --good:#6fd08e; --bad:#f08a80; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#11141b; --surface:#181c26; --sunk:#202534; --ink:#e6e9f1; --muted:#9aa2b7; --line:#2b3142;
+  --accent:#92a7f5; --accent-soft:#1f2a4d; --ex:#62cbbd; --ex-soft:#14302c; --trap:#f0b36a; --trap-soft:#352816;
+  --go:#c3a4f0; --go-soft:#2a2040; --code:#1f2433; --good:#6fd08e; --bad:#f08a80; color-scheme:dark}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:64px}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.62 var(--body)}
+.wrap{max-width:820px;margin:0 auto;padding:0 16px 90px}
+h1,h2,h3,h4{font-family:var(--display);text-wrap:balance;margin:0;line-height:1.2}
+h1{font-size:clamp(2rem,6vw,2.8rem);font-weight:700;letter-spacing:-.01em}
+h2{font-size:1.65rem;font-weight:700}
+h3{font-size:1.18rem;font-weight:600;margin-top:6px}
+h4{font:600 .78rem var(--body);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+p{margin:0}
+a{color:var(--accent)}
+a:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+code,.m{font-family:var(--mono);font-size:.9em}
+code{background:var(--code);padding:1px 5px;border-radius:4px}
+.sym{font-size:.93rem;border-left:3px solid var(--accent);padding:6px 0 6px 14px;margin:10px 0 14px;display:grid;gap:4px}.sym>b{font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}.sym ul{margin:0;padding-left:1.2em;display:grid;gap:3px}
+.f{display:block;font-family:var(--mono);font-size:.88rem;background:var(--code);padding:10px 14px;border-radius:8px;white-space:pre-wrap;overflow-wrap:anywhere;word-break:normal;line-height:1.65}
+.extra{margin:12px 0;border:1.5px dashed var(--go);border-radius:10px;background:var(--go-soft)}.extra>summary{cursor:pointer;padding:9px 14px;font-weight:600;list-style:none}.extra>summary::-webkit-details-marker{display:none}.extra>summary::after{content:"+";float:right;font-weight:700;color:var(--go)}.extra[open]>summary::after{content:"−"}.extra .xt{display:inline-block;margin-right:6px;padding:1px 8px;border-radius:99px;background:var(--go);color:var(--bg);font-size:.72rem;letter-spacing:.08em;text-transform:uppercase}.extra .xb{padding:0 14px 8px}
+.tt{cursor:help;border-bottom:1px dotted var(--muted)}#tip{position:fixed;z-index:60;left:0;top:0;max-width:min(300px,86vw);background:var(--ink);color:var(--bg);padding:7px 10px;border-radius:8px;font:500 .82rem/1.4 var(--body);box-shadow:0 6px 20px rgba(0,0,0,.25);pointer-events:none;opacity:0;transition:opacity .08s;white-space:normal}
+.f .tk-n{color:var(--ex);font-weight:600}.f .tk-o{color:var(--muted)}.f .tk-k{color:var(--accent);font-weight:600}.f .tk-c{color:var(--muted);font-style:italic}.f .tk-s{color:var(--go)}
+.sub{color:var(--muted)}
+header.top{padding:34px 0 14px;display:grid;gap:12px}
+.eyebrow{font:600 .74rem var(--body);letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
+nav.bar{position:sticky;top:0;z-index:5;background:var(--bg);border-bottom:1px solid var(--line);margin:0 -16px;padding:8px 16px;display:flex;gap:6px;overflow-x:auto;white-space:nowrap}
+nav.bar a{font:600 .85rem var(--body);text-decoration:none;color:var(--ink);padding:6px 12px;border:1px solid var(--line);border-radius:999px;background:var(--surface)}
+nav.bar a:hover{border-color:var(--accent)}
+section.ch{margin-top:38px;display:grid;gap:16px}
+.chead{display:grid;gap:6px;padding-bottom:10px;border-bottom:2px solid var(--ink)}
+.chead .no{font:500 .85rem var(--mono);color:var(--accent)}
+.blk{display:grid;gap:10px}
+ul,ol{margin:0;padding-left:1.25em;display:grid;gap:5px}
+.box{border-radius:10px;padding:12px 14px;display:grid;gap:6px;border:1px solid transparent}
+.box h4{margin:0}
+.ex{background:var(--ex-soft)} .ex h4{color:var(--ex)}
+.trap{background:var(--trap-soft)} .trap h4{color:var(--trap)}
+.go{background:var(--go-soft)} .go h4{color:var(--go)}
+.key{background:var(--accent-soft)} .key h4{color:var(--accent)}
+.tw{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:.9rem;font-variant-numeric:tabular-nums}
+th,td{text-align:left;padding:6px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font:600 .76rem var(--body);letter-spacing:.05em;text-transform:uppercase;color:var(--muted);white-space:nowrap}
+td.nw{white-space:nowrap}
+figure{margin:0;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px}
+figure svg{display:block;width:100%;height:auto;max-width:560px;margin:auto}
+figcaption{font-size:.85rem;color:var(--muted);padding:6px 4px 0}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px;display:grid;gap:10px}
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:10px}
+.src{font-size:.82rem;color:var(--muted)}
+.refs li{font-size:.92rem}
+footer{margin-top:40px;font-size:.85rem;color:var(--muted);display:grid;gap:4px}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="top">
+  <span class="eyebrow">Machine Learning and Data Mining · Part 2 · Lectures 08, 09, 10a, 10b, 11</span>
+  <h1>Classification, from first model to fair comparison</h1>
+  <p class="sub">A complete explanation of what a classifier is, how to build a decision tree, how to measure and choose models honestly, and three more families of classifier (Naïve Bayes, logistic regression, kNN). Every concept has a worked example, an exam trap and a reference. Running example: <b>NordicMart</b>, a <b>fictional</b> retailer predicting which customers will churn (12% do). Its data, counts, weights and scores are <b>illustrative numbers built to teach</b> (the arithmetic on them is checked), not results fitted on a real data set; the weather and Iris examples are the classic data sets. Reference book: Tan, Steinbach, Karpatne &amp; Kumar, <i>Introduction to Data Mining</i>, 2nd ed. (<b>TSK</b>).</p>
+</header>
+
+<nav class="bar" aria-label="Chapters">
+  <a href="#map">Map</a><a href="#l08">08 Classification</a><a href="#l09">09 Trees</a><a href="#l10a">10a Model selection</a><a href="#l10b">10b Measures</a><a href="#l11">11 NB · LR · kNN</a><a href="#cheat">Cheat sheet</a><a href="#refs">References</a>
+</nav>
+
+<!-- MAP -->
+<section class="ch" id="map">
+  <div class="chead"><span class="no">00</span><h2>The map in one table</h2></div>
+  <p>The five lectures are one pipeline: <b>build a model</b>, <b>measure it</b>, <b>choose between models fairly</b>, <b>pick the right yardstick</b>, then <b>try other model families with the same toolbox</b>.</p>
+  <div class="tw"><table>
+    <thead><tr><th>Lecture</th><th>The question</th><th>The answer in a line</th></tr></thead>
+    <tbody>
+      <tr><td class="nw">08</td><td>What is a classifier, and how do I know it works?</td><td>A learned decision function, judged on unseen data (train/test, CV, baseline). Entropy and information gain pick the tests of a tree.</td></tr>
+      <tr><td class="nw">09</td><td>What does a full tree do wrong?</td><td>It overfits noise. Prune it, tune hyperparameters without touching the test set, and prevent data leakage.</td></tr>
+      <tr><td class="nw">10a</td><td>How do I choose hyperparameters honestly, and how precise is an error estimate?</td><td>Cross-validation on the training part; every estimate has an error bar that shrinks as 1/√N.</td></tr>
+      <tr><td class="nw">10b</td><td>Best according to what?</td><td>Confusion matrix, precision/recall/F1, κ, MCC, costs, thresholds, ROC/AUC, lift.</td></tr>
+      <tr><td class="nw">11</td><td>Which other classifiers, and which one wins?</td><td>Naïve Bayes (counting), logistic regression (linear log-odds), kNN (the data is the model); compare with the same toolbox.</td></tr>
+    </tbody>
+  </table></div>
+  <div class="box key"><h4>Notation used throughout</h4><p><b>Hover (or tap) any dotted-underlined term, in formulas or in the text, to see what it means.</b> X: the data set, N individuals with D attributes each. y(x): the class of x (C possible values). M(x, θ): the model with parameters θ. TP, FP, TN, FN: confusion-matrix cells. log<sub>2</sub> for entropy, ln for log loss.</p></div>
+</section>
+
+<!-- ============ L08 ============ -->
+<section class="ch" id="l08">
+  <div class="chead"><span class="no">LECTURE 08</span><h2>Classification, validation and entropy</h2></div>
+
+  <div class="blk">
+    <h3>1. Supervised classification</h3>
+    <p>The data set X has N individuals with D attribute values each. A class vector Y gives, for each individual, one of C class values assigned by experts (the supervisors); the soybean data set labels plants with diseases. The goal is to <b>guess y(x) for individuals the experts have not examined</b>, by learning a classification model.</p>
+    <p>A model is a parametrized algorithm. Developing one has three steps: choose the learning algorithm, let it learn its parameters, assess its quality. At run time the algorithm uses the learned parameters.</p>
+    <span class="f">M(x, θ) = y_pred(x)        learning: find θ that reduces the prediction error as much as possible</span>
+    <div class="sym"><b>Reading the symbols</b><ul><li><code>x</code>: one record, i.e. the list of its attribute values (for a customer: age, spend, tickets, …).</li><li><code>θ</code> (theta): the model’s <i>parameters</i>, the numbers the algorithm learns from the data. For a line they are its coefficients; for a tree they are the tests and thresholds.</li><li><code>M(x, θ)</code>: the model, a function that reads a record and the parameters and returns a class. <code>y_pred</code> is that returned class.</li><li>In words: learning means adjusting θ until the predicted classes agree with the experts’ labels as often as possible.</li></ul></div>
+    <div class="box ex"><h4>Worked example · a line as a classifier</h4>
+      <p>Two attributes, two classes. Decision function: θ₁d₁ + θ₂d₂ + θ₃ ≥ 0 ⇒ class c₁, otherwise c₂. Even with the best θ a straight line makes errors on some data. A quadratic θ₁d₁² + θ₂d₂² + θ₃d₁d₂ + θ₄d₁ + θ₅d₂ + θ₆ has more <i>shattering power</i>: it can carve the plane into more homogeneous regions. “All models are wrong, but some are useful” (George Box).</p></div>
+    <p><b>VC dimension</b> measures shattering power. N points admit 2<sup>N</sup> labellings; if a model can realize all of them, its VC dimension is at least N. A straight line in the plane has VC dimension 3 (any 3 non-collinear points can be separated in all 8 ways, 4 points cannot always). In real data even a line is often not bad.</p>
+    <p>Two flavours: <b>crisp</b> classifiers output one label; <b>probabilistic</b> (soft) classifiers output one probability per class. Lecture 10b exploits the second kind.</p>
+  </div>
+
+  <div class="blk">
+    <h3>2. Measuring a classifier</h3>
+    <p><b>Training error</b> counts mistakes on the data used for learning. <b>Generalization error</b> counts mistakes on new data: this is the one we care about, and it is unknown because new data have no labels yet. Training error is optimistic: a lookup table that memorizes the data scores 0%. More flexibility always lowers the training error, so it cannot choose the model.</p>
+    <figure><svg id="fig-complexity" viewBox="0 0 560 270" role="img" aria-label="Schematic: training error falls with model complexity while test error is U shaped."></svg>
+    <figcaption>Schematic. Underfitting: both errors high (model too simple). Overfitting: training error low, test error rising (the model learns noise). The sweet spot is the simplest model that captures the pattern.</figcaption></figure>
+    <h4>The train/test split</h4>
+    <ul>
+      <li>Split the labelled data at random: training set to learn, test set (labels hidden from the model) to estimate. Proportions are the experimenter's choice: 80-20, 67-33, 50-50.</li>
+      <li>Assumption: both parts look like the future data, so the sample must come from a random process.</li>
+      <li>Workflow: (1) learn on training; (2) predict the test set and compare with the true labels; (3) use the model on new individuals, and when true labels arrive, compare them with the estimate.</li>
+      <li><b>The test set is the future</b>: never learn from it, never choose by looking at it, otherwise its error is no longer an honest estimate. The same holds for anything computed from the data before the split (data leakage, lecture 09).</li>
+    </ul>
+    <h4>The baseline: how good is good?</h4>
+    <p>The majority-class rule always predicts the most frequent class, with no learning at all. NordicMart has 12% churners, so “nobody churns” is right 88% of the time. Iris has three balanced classes, so the baseline is 33%. <b>A model is interesting only if it beats the baseline.</b></p>
+    <h4>Cross-validation, the idea</h4>
+    <p>A different random split gives a different test error, and with small data sets the variation can be large. Cross-validation uses every individual for both training and testing, fairly: split into k = 5 folds; in each of 5 rounds one fold is the test set and the other four train the model; report the mean and the standard deviation of the 5 errors.</p>
+    <div class="tw"><table>
+      <thead><tr><th>Round</th><th>Fold 1</th><th>Fold 2</th><th>Fold 3</th><th>Fold 4</th><th>Fold 5</th><th>Result</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td><b>test</b></td><td>train</td><td>train</td><td>train</td><td>train</td><td>error₁</td></tr>
+        <tr><td>2</td><td>train</td><td><b>test</b></td><td>train</td><td>train</td><td>train</td><td>error₂</td></tr>
+        <tr><td>3</td><td>train</td><td>train</td><td><b>test</b></td><td>train</td><td>train</td><td>error₃</td></tr>
+        <tr><td>4</td><td>train</td><td>train</td><td>train</td><td><b>test</b></td><td>train</td><td>error₄</td></tr>
+        <tr><td>5</td><td>train</td><td>train</td><td>train</td><td>train</td><td><b>test</b></td><td>error₅</td></tr>
+      </tbody></table></div>
+    <div class="box trap"><h4>Exam trap</h4><p>“Accuracy 88%” means nothing until you know the baseline. With 12% positives a classifier that always says “no” has 88%.</p></div>
+  </div>
+
+  <div class="blk">
+    <h3>3. Decision trees: using one</h3>
+    <p>Decision trees are a good compromise: decent performance, fast to train and to run, easy to understand. History: CLS (Hunt et al., 1966), ID3 (Quinlan, 1979), C4.5 (Quinlan, 1993). A tree is a tree-shaped set of tests: inner nodes test one attribute, leaves hold a class.</p>
+    <span class="f">execute(node, x):
+    if node is inner:
+        if test on attribute d of x holds: execute(node_yes, x)
+        else:                              execute(node_no, x)
+    else:                                  predict the class c of the leaf</span>
+    <div class="sym"><b>In words</b><ul><li>Start at the root. At an inner node, check the test on the record x (for example “humidity &gt; 75?”) and follow the “yes” or the “no” branch. Repeat until you reach a leaf, then output the class stored in the leaf.</li><li><code>execute</code> calls itself on the child node: that is a recursion, the natural way to walk a tree.</li></ul></div>
+  </div>
+
+  <div class="blk">
+    <h3>4. Entropy: information as surprise</h3>
+    <p>How interesting is a pattern? Information theory (Claude Shannon, 1948) answers with <b>entropy</b>: the information content of a source, its surprise. Two weather stations send one symbol per day: A always sends “sunny”; B sends sunny, cloudy, rainy or snowy equally often. B carries more information because you cannot predict tomorrow's symbol before receiving it.</p>
+    <div class="box ex"><h4>Worked example · fewer bits for likely symbols</h4>
+      <p>Four symbols with equal probability 0.25 need 2 bits each (A=00, B=01, C=10, D=11). With probabilities 0.5, 0.25, 0.125, 0.125 the code A=0, B=10, C=110, D=111 averages 0.5·1 + 0.25·2 + 0.125·3 + 0.125·3 = <b>1.75 bits</b>. Three equally likely symbols: the simple code A=0, B=10, C=11 averages 1.67 bits, and coding several symbols together gets below 1.6, towards log<sub>2</sub>3 = 1.585. The best average code length is the entropy:</p>
+      <span class="f">H(X) = − Σ_j p_j · log2(p_j)</span>
+    <div class="sym"><b>Reading the symbols</b><ul><li><code>p<sub>j</sub></code>: the probability of symbol j (for the weather: the fraction of days of each class).</li><li><code>Σ<sub>j</sub></code> (sigma): add up the term for every symbol j.</li><li><code>log<sub>2</sub>(p)</code>: the power to which 2 is raised to get p. It is always ≤ 0 for p ≤ 1 (log<sub>2</sub> 0.5 = −1), so the minus sign makes each term positive. A rare symbol (small p) has a large −log<sub>2</sub> p: it is surprising.</li><li>So H is the <b>average surprise in bits</b>: 0 when one symbol is certain, 1 bit for a fair coin, log<sub>2</sub>V at most for V symbols.</li></ul></div>
+</div>
+    <figure><svg id="fig-entropy" viewBox="0 0 560 250" role="img" aria-label="Binary entropy as a function of p, peaking at 1 bit for p = 0.5."></svg>
+    <figcaption>Entropy of a binary source: 0 at p = 0 or 1, maximum 1 bit at p = 0.5. More distinct values raise the maximum (log<sub>2</sub>V).</figcaption></figure>
+    <ul>
+      <li><b>High entropy</b>: similar probabilities, a flat histogram, hard to guess. <b>Low entropy</b>: some values much likelier, a peaked histogram.</li>
+      <li>Classification link: low entropy of the class labels means low diversity, high purity, a clear majority. We look for logical tests that split the data into purer subsets.</li>
+    </ul>
+    <div class="box ex"><h4>Worked example · entropy of the weather class</h4>
+      <p>The weather (play tennis) data: 14 days, 4 categorical attributes (outlook, temperature, humidity, windy), class <i>play</i>: 9 yes, 5 no.</p>
+      <span class="f">p_yes = 9/14 = 0.643   log2 = −0.637        p_no = 5/14 = 0.357   log2 = −1.485
+H = −(0.643·(−0.637) + 0.357·(−1.485)) = 0.410 + 0.530 = 0.940 bits</span>
+      <p>Close to 1: the class is hard to guess. By-hand cheat sheet: −p·log<sub>2</sub>p is 0.500 for p = 1/2, 0.528 for 1/3, 0.390 for 2/3, 0.311 for 3/4, 0.464 for 1/5, 0.529 for 2/5, 0.442 for 3/5, 0.258 for 4/5. So H(2/5, 3/5) = 0.971 and H(1/4, 3/4) = 0.311 + 0.500 = 0.811; H(1, 0) = 0.</p></div>
+  </div>
+
+  <div class="blk">
+    <h3>5. Information gain</h3>
+    <p>The <b>information gain</b> of a test is the reduction of the class entropy it achieves: what we gain in predicting the class by knowing the outcome of the test. After a split, the new entropy is the <i>weighted</i> sum of the entropies of the parts, with weights equal to the relative sizes.</p>
+    <span class="f">IG(c | d) = H(c) − H(c | d)        H(c | d) = Σ_i (N_i / N) · H(c | outcome_i)</span>
+    <div class="sym"><b>Reading the symbols</b><ul><li><code>c</code>: the class; <code>d</code>: the attribute whose test we are evaluating.</li><li><code>H(c)</code>: class entropy <i>before</i> the split. <code>H(c | d)</code>: class entropy <i>after</i> it, “given that we know the outcome of the test on d”.</li><li><code>outcome<sub>i</sub></code>: the i-th branch of the test (sunny, overcast, rainy). <code>N<sub>i</sub></code>: records in that branch, <code>N</code>: records in the node. <code>N<sub>i</sub>/N</code> is the weight of the branch.</li><li>In words: IG = entropy before − weighted average entropy of the children. A big IG means the children are much purer than the parent.</li></ul></div>
+    <div class="box ex"><h4>Worked example · splitting the weather data on outlook</h4>
+      <div class="tw"><table>
+        <thead><tr><th>outlook</th><th>yes / no</th><th>size</th><th>weight</th><th>entropy</th></tr></thead>
+        <tbody>
+          <tr><td>sunny</td><td>2 / 3</td><td>5</td><td>5/14</td><td>0.971</td></tr>
+          <tr><td>overcast</td><td>4 / 0</td><td>4</td><td>4/14</td><td>0</td></tr>
+          <tr><td>rainy</td><td>3 / 2</td><td>5</td><td>5/14</td><td>0.971</td></tr>
+        </tbody></table></div>
+      <span class="f">H(play | outlook) = 5/14·0.971 + 4/14·0 + 5/14·0.971 = 0.694
+IG(play | outlook) = 0.940 − 0.694 = 0.247</span>
+      <div class="tw"><table>
+        <thead><tr><th>attribute</th><th>branches (yes/no)</th><th>H(play | ·)</th><th>IG</th></tr></thead>
+        <tbody>
+          <tr><td>outlook</td><td>2/3, 4/0, 3/2</td><td>0.694</td><td><b>0.247</b></td></tr>
+          <tr><td>humidity</td><td>3/4, 6/1</td><td>0.788</td><td>0.152</td></tr>
+          <tr><td>windy</td><td>6/2, 3/3</td><td>0.892</td><td>0.048</td></tr>
+          <tr><td>temperature</td><td>2/2, 4/2, 3/1</td><td>0.911</td><td>0.029</td></tr>
+        </tbody></table></div>
+      <p>Test outlook first, then repeat inside the sunny and rainy branches. The overcast branch (entropy 0) is a leaf: every day there has a known class.</p></div>
+    <div class="box ex"><h4>Worked example · the full weather tree</h4>
+      <p>Sunny branch (2 yes, 3 no, H = 0.971): humidity splits it perfectly (high: 0 yes/3 no, normal: 2/0), IG = 0.971; temperature gives 0.571, windy 0.020. Rainy branch (3 yes, 2 no): windy splits it perfectly (false: 3/0, true: 0/2), IG = 0.971; humidity gives 0.020.</p>
+      <span class="f">outlook = overcast → yes
+outlook = sunny    → humidity = high → no  |  humidity = normal → yes
+outlook = rainy    → windy = false   → yes |  windy = true      → no</span></div>
+    <h4>Numeric attributes</h4>
+    <p>Split by a threshold t: d &lt; t versus d ≥ t. Try the thresholds, compute the weighted entropy of the two parts and keep the one with the maximum gain.</p>
+    <span class="f">IG(c | d:t) = H(c) − [ H(c | d&lt;t)·P(d&lt;t) + H(c | d≥t)·P(d≥t) ]        IG(c | d) = max_t IG(c | d:t)</span>
+    <div class="sym"><b>Reading the symbols</b><ul><li><code>t</code>: a threshold on the numeric attribute d. It cuts the records into two parts: <code>d &lt; t</code> and <code>d ≥ t</code>.</li><li><code>P(d &lt; t)</code>: the fraction of records in the low part (the weight of that part). <code>H(c | d&lt;t)</code>: class entropy inside it.</li><li><code>max<sub>t</sub></code>: try every candidate threshold and keep the one with the largest gain; that value is the gain of the attribute d.</li></ul></div>
+    <div class="box ex"><h4>Worked example · reduced Iris, petal width, threshold 1.75</h4>
+      <p>100 flowers, classes 1 and 2 (50 each): H(class) = 1. Threshold 1.75 gives a low part of 54 records (49 class 1, 5 class 2) and a high part of 46 (1 class 1, 45 class 2).</p>
+      <span class="f">H(low)  = −(49/54·log2 49/54 + 5/54·log2 5/54)  = 0.445
+H(high) = −(1/46·log2 1/46 + 45/46·log2 45/46)  = 0.151
+H(class | d:1.75) = 0.54·0.445 + 0.46·0.151 = 0.31        IG = 1 − 0.31 = 0.69</span></div>
+    <p><b>What IG can and cannot tell you.</b> Predicting long life, IG(LongLife | HairColor) = 0.01, IG(Smoker) = 0.2, IG(Gender) = 0.25, IG(LastDigitSSN) = 0.00001: the gain ranks useful attributes above useless ones. Correlations between attributes are not considered.</p>
+    <div class="box key"><h4>Answer to “which attribute should we test?”</h4><p>The attribute (and threshold) with the maximum information gain on the current set X. Partition X by the outcomes of the test and recurse on each part.</p></div>
+    <div class="box trap"><h4>Exam traps</h4>
+      <ul><li>Entropy is maximum with equally frequent classes, not when one class dominates; it does not depend on the number of records.</li>
+      <li>A node with entropy 0 is a pure node (known class), not a useless one.</li>
+      <li>The weighted entropy of the children is never above the parent's, so IG ≥ 0.</li></ul></div>
+    <p class="src">References: TSK 3.1–3.3 (classification framework, decision trees, impurity measures), 3.6 (holdout, cross-validation); Shannon (1948); Quinlan (1986, 1993). Witten et al. (2016) ch. 4 for the weather data.</p>
+  </div>
+</section>
+
+<!-- ============ L09 ============ -->
+<section class="ch" id="l09">
+  <div class="chead"><span class="no">LECTURE 09</span><h2>Decision trees: growing, overfitting, pruning</h2></div>
+
+  <div class="blk">
+    <h3>1. Growing a tree on Iris, step by step</h3>
+    <p>Experiment: Iris, split 50-50 at random (<code>train_test_split</code>, <code>random_state=10</code>): 75 training and 75 test flowers; class entropy 1.58 in both parts (the maximum for three classes is log<sub>2</sub>3 = 1.585). The tree is learned on the training set only. <b>The training set was deliberately altered</b>: two class labels were changed, to show training errors and overfitting.</p>
+    <h4>Information gain of each attribute at the root (best threshold)</h4>
+    <div class="tw"><table>
+      <thead><tr><th>attribute</th><th>best threshold</th><th>low part (N, H)</th><th>high part (N, H)</th><th>IG</th></tr></thead>
+      <tbody>
+        <tr><td>sepal length</td><td>5.75</td><td>40, 1.04</td><td>35, 0.90</td><td>1.58 − (40·1.04 + 35·0.90)/75 = 0.61</td></tr>
+        <tr><td>sepal width</td><td>3.25</td><td>52, 1.44</td><td>23, 0.56</td><td>1.58 − (52·1.44 + 23·0.56)/75 = 0.41</td></tr>
+        <tr><td>petal length</td><td>2.6</td><td>27, 0</td><td>48, 1.00</td><td>1.58 − (27·0 + 48·1.00)/75 = <b>0.94</b></td></tr>
+        <tr><td>petal width</td><td>0.75</td><td>27, 0</td><td>48, 1.00</td><td><b>0.94</b></td></tr>
+      </tbody></table></div>
+    <p>Petal length and petal width tie; the slides use petal width ≤ 0.75, which isolates all 27 setosa flowers in a pure leaf. Label of each part: the majority class.</p>
+    <h4>The recursion</h4>
+    <div class="tw"><table>
+      <thead><tr><th>node</th><th>test</th><th>samples</th><th>entropy</th><th>result</th></tr></thead>
+      <tbody>
+        <tr><td>root</td><td>petal width ≤ 0.75</td><td>75</td><td>1.58</td><td>left: 27, pure setosa</td></tr>
+        <tr><td>right</td><td>petal length ≤ 4.75</td><td>48</td><td>1.125</td><td>left: 22, pure versicolor</td></tr>
+        <tr><td>right-right</td><td>sepal length ≤ 6.6</td><td>26</td><td>0.622</td><td>left: 17, pure virginica</td></tr>
+        <tr><td>…</td><td>sepal width ≤ 3.1</td><td>9</td><td>1.224</td><td>right: 2 records, entropy 1.0, no test gives gain</td></tr>
+        <tr><td>…</td><td>petal length ≤ 5.1</td><td>7</td><td>0.592</td><td>two pure leaves (1 and 6 records)</td></tr>
+      </tbody></table></div>
+    <div class="box ex"><h4>Worked example · the weighted entropy always drops</h4>
+      <p>Take the node with entropy 0.622 and 34.7% of the data (26 records). Its children have entropy 0 (22.7%) and 1.224 (12%). One child has <i>higher</i> entropy than the parent, yet the weighted sum is lower: (0·22.7 + 1.224·12)/34.7 = <b>0.42 &lt; 0.622</b>.</p></div>
+    <p><b>When does the recursion end?</b> Most leaves are pure, so recursion is impossible. One leaf is not pure but no test gives a positive gain; its label is the majority class (or one of the tied classes). Training set error: 1.33%, one of 75 training examples misclassified (one of the two records in the rightmost leaf).</p>
+    <span class="f">buildTree(X, p):
+    if all class values of X are c:         return leaf p with label c
+    if no attribute gives positive IG in X:  return leaf p with the most frequent class of X
+    find (d, t) with maximum IG in X
+    create p_left, p_right
+    buildTree(X[d &lt; t], p_left);  buildTree(X[d ≥ t], p_right)</span>
+    <div class="sym"><b>In words</b><ul><li><code>X</code>: the training records that reach this node; <code>p</code>: the node being built. Line by line: (1) if all records have the same class, make a leaf with that class; (2) if no test helps (no positive IG), make a leaf with the most frequent class; (3) otherwise choose the best attribute and threshold <code>(d, t)</code>, split X in two parts and apply the same procedure to each part.</li><li>It is <b>greedy</b>: at each node it takes the best split now, without looking ahead.</li></ul></div>
+  </div>
+
+  <div class="blk">
+    <h3>2. Errors and overfitting</h3>
+    <p>Training set error: run the tree on the training set itself (class hidden) and count discordances. It can be above zero because of the limits of decision trees (single-attribute tests can fail) or insufficient information in the predicting attributes (identical attributes, different classes). The 1.33% is probably a <i>lower</i> limit of the error on new data; we want an upper limit, or at least a realistic value: the test set error.</p>
+    <div class="tw"><table>
+      <thead><tr><th>Tree</th><th>Training error</th><th>Test error</th></tr></thead>
+      <tbody>
+        <tr><td>Full tree, original labels</td><td>0 / 75</td><td>6 / 75</td></tr>
+        <tr><td>Full tree, two labels altered</td><td>1 / 75 = 1.33%</td><td>12 / 75 = 16%</td></tr>
+        <tr><td>Pruned (depth 2), two labels altered</td><td>3 / 75 = 4%</td><td>6 / 75 = 8%</td></tr>
+      </tbody></table></div>
+    <p>Two wrong labels out of 75 double the test error: a fully grown tree trusts every training example.</p>
+    <div class="box key"><h4>Overfitting, formally</h4>
+      <p>A tree is a <i>hypothesis</i> h about the relation between predicting attributes and class. h overfits the training set if there is an alternative h′ with error<sub>train</sub>(h) &lt; error<sub>train</sub>(h′) and error<sub>X</sub>(h) &gt; error<sub>X</sub>(h′), where error<sub>X</sub> is the error on the entire data set. When the learning is affected by noise, test performance is much worse than training performance.</p></div>
+    <ul>
+      <li><b>Causes</b>: (1) noise: bad values or labels, unusual cases; (2) lack of representative instances: some situations under-represented or absent in training.</li>
+      <li><b>Occam's razor</b>: other things being equal, simple theories are preferable; a long hypothesis that fits the data is more likely a coincidence. Pruning simplifies a tree, and we need quantitative guidelines for it.</li>
+    </ul>
+    <figure><svg id="fig-depth" viewBox="0 0 560 250" role="img" aria-label="Schematic: training error decreases with maximum tree depth, test error is U shaped."></svg>
+    <figcaption>Schematic of error against maximum tree depth (shape only, not measured values).</figcaption></figure>
+  </div>
+
+  <div class="blk">
+    <h3>3. Pruning and hyperparameters</h3>
+    <p><b>Hyperparameters</b> are settings of the learning algorithm: not learned from data, chosen by us; each model family has its own. For decision trees in scikit-learn:</p>
+    <div class="tw"><table>
+      <thead><tr><th>Hyperparameter</th><th>Effect</th></tr></thead>
+      <tbody>
+        <tr><td><code>max_depth</code></td><td>maximum tree depth (limits growth)</td></tr>
+        <tr><td><code>min_samples_leaf</code>, <code>min_samples_split</code></td><td>the meaning of “X is small”: when to stop even if the class is not unique</td></tr>
+        <tr><td><code>max_leaf_nodes</code>, <code>ccp_alpha</code></td><td>post-pruning</td></tr>
+        <tr><td><code>criterion</code></td><td><code>"gini"</code> (default) or <code>"entropy"</code></td></tr>
+      </tbody></table></div>
+    <p><b>How to choose them?</b> Try several values and keep the best... best on what? Not the training set (it always prefers the deepest tree), not the test set (then it is no longer a fair estimate). The answer: <b>cross-validation on the training set</b> (lecture 10a). In the Iris example the pruned depth-2 tree has training error 4% and test error 8%.</p>
+    <div class="box go"><h4>In scikit-learn</h4>
+      <span class="f">from sklearn.tree import DecisionTreeClassifier
+from sklearn.model_selection import cross_val_score
+for d in [1, 2, 3, 5, None]:
+    scores = cross_val_score(DecisionTreeClassifier(max_depth=d, random_state=0), X_train, y_train, cv=5)
+    print(d, scores.mean().round(3), scores.std().round(3))</span></div>
+  </div>
+
+  <div class="blk">
+    <h3>4. Impurity functions</h3>
+    <p>To choose the attribute that splits the data, look for the split with maximum purity of the children. Three measures of the impurity of a node with class frequencies f<sub>j</sub>:</p>
+    <span class="f">Entropy   = − Σ f_j log2 f_j                     (criterion="entropy")
+Gini      = 1 − Σ f_j²   = Σ f_j (1 − f_j)       (sklearn default; max 1 − 1/C, min 0)
+Misclass. = 1 − max_j f_j                         (optional)
+Gini gain = GINI_parent − Σ_i (N_i / N) · GINI(child_i)</span>
+    <div class="sym"><b>Reading the symbols</b><ul><li><code>f<sub>j</sub></code>: the fraction of the node’s records that belong to class j (the class frequencies, adding up to 1). <code>C</code>: number of classes.</li><li><code>Σ<sub>j</sub></code>: sum over the classes. Entropy and Gini are both 0 for a pure node and largest when the classes are equally mixed.</li><li>Misclassification is the error you would make by labelling the node with its majority class. Gini gain works like information gain: parent impurity minus the weighted impurity of the children (<code>N<sub>i</sub>/N</code> = share of records in child i).</li></ul></div>
+    <p><b>Gini intuition</b>: assign a class at random following the node's class frequencies; f<sub>j</sub>(1 − f<sub>j</sub>) is the probability of a wrong assignment for class j, and the sum is the total probability of a wrong classification. Used by CART, SLIQ, SPRINT.</p>
+    <div class="box ex"><h4>Worked example · Gini on the weather data, split on outlook</h4>
+      <span class="f">root (9 yes, 5 no):  1 − (9/14)² − (5/14)² = 0.459
+sunny (2/3): 1 − 0.4² − 0.6² = 0.48     overcast (4/0): 0     rainy (3/2): 0.48
+after the split: 5/14·0.48 + 4/14·0 + 5/14·0.48 = 0.343
+reduction: 0.459 − 0.343 = 0.116</span></div>
+    <p>Misclassification error is linear in the class frequency, so an error in the frequency passes entirely into the impurity; entropy and Gini have a varying derivative and a minimum around the centre, so they are more robust to errors in the frequency when the classes are balanced. <b>In practice the impurity measure has low impact on the result; the pruning strategy has high impact.</b></p>
+  </div>
+
+  <div class="blk">
+    <h3>5. Data leakage</h3>
+    <p>Information that will not be available at prediction time reaches the model during learning. Effect: the evaluation is too optimistic, a great test score and poor results in production. Two routes:</p>
+    <div class="cols">
+      <div class="card"><h4>Route 1 · preparation on all the data</h4><p>NordicMart has 303 missing ages. <b>Leak:</b> fill them with the mean age of all 3000 rows, then split. <b>Correct:</b> split first, take the mean age of the training rows, apply that same number to the test rows. Same for scaling, encodings, outlier thresholds and feature selection.</p></div>
+      <div class="card"><h4>Route 2 · features from the future</h4><p>NordicMart churn = no purchase in the 90 days after the snapshot. Leaking features: days since last buy (measured today, not at the snapshot), loyalty card cancelled, retention offer sent (only to customers already flagged). Rule: every feature must be known at prediction time.</p></div>
+    </div>
+    <ul>
+      <li><b>Symptoms</b> seen with a tree: results too good to be true, one attribute with an enormous information gain, a tree that is a single stump on that attribute.</li>
+      <li>Also the same individual in training and test (duplicates, several rows per customer): split by individual, not by row.</li>
+      <li><b>Remedy</b>: split first, prepare on training only, check every feature's timing.</li>
+    </ul>
+  </div>
+
+  <div class="blk">
+    <h3>6. Properties of decision-tree induction</h3>
+    <ul>
+      <li><b>Cost</b>: height O(log N); each level touches all data, each node all attributes: O(D·N·log N). Binary numeric splits O(N log N) and pruning O(N log N) add nothing to the order. Classifying a new record: O(h), extremely efficient.</li>
+      <li><b>Non-parametric</b>: no assumption on the distributions of classes and attributes.</li>
+      <li>Finding the best tree is <b>NP-complete</b>: the algorithm is greedy (the best immediate gain at each decision point, part of the hill-climbing family, no guarantee of the best result; a sequence of individually sub-optimal choices could give a better final tree).</li>
+      <li>Robust to noise in the labels if pruned; redundant attributes cause no difficulty; deep nodes are often irrelevant (few training records) and pruned.</li>
+      <li>scikit-learn trees do not accept categorical attributes directly: transform them first.</li>
+    </ul>
+    <div class="box ex"><h4>Think-questions from the lecture, with answers</h4>
+      <ul>
+        <li><b>Why greedy instead of trying all trees?</b> The number of trees is astronomically large and finding the optimal one is NP-complete; the greedy choice is cheap and good in practice.</li>
+        <li><b>Marital status near the top of a wealth tree on the Adult data: a major cause of wealth?</b> No. The tree shows that it <i>predicts</i> the class, not that it causes it.</li>
+        <li><b>Attributes not in the tree: not causes?</b> No. A correlated attribute may simply have been redundant once another was chosen.</li>
+        <li><b>A churn tree has “days since last buy &gt; 90” at the root with near-maximum IG: first check?</b> Target leakage: the feature is measured today while churn is defined on the following 90 days.</li>
+      </ul></div>
+    <p class="src">References: TSK 3.3 (decision tree induction and characteristics), 3.4 (model overfitting), 3.7 (hyper-parameters), 3.8 (pitfalls); Quinlan (1993); Breiman et al. (1984) for Gini/CART; scikit-learn user guide “Decision Trees”.</p>
+  </div>
+</section>
+
+<!-- ============ L10a ============ -->
+<section class="ch" id="l10a">
+  <div class="chead"><span class="no">LECTURE 10a</span><h2>Model selection and reliable estimates</h2></div>
+
+  <div class="blk">
+    <h3>1. Why evaluate</h3>
+    <p>Questions to answer: which kind of model is best for this problem? Which learning algorithm? Which hyperparameter values? Evaluation estimates the run-time performance (the model in use on new data, hence the expected cost of errors) and compares alternatives, independently of the algorithm that built the model. Every estimate has a random component: another sample, another number.</p>
+    <div class="box ex"><h4>Worked example · oil-slick detection</h4><p>Dark regions in radar satellite images can be oil spills or look-alikes caused by wind and sea conditions; manual inspection is expensive and slow. Spills are rare, so classes are imbalanced. The deployed system pre-selects images for manual check, so there is a trade-off: missed spills versus false alarms. Evaluation guides that trade-off.</p></div>
+    <p><b>Parameters</b> are learned from data (tests and thresholds of the tree nodes); <b>hyperparameters</b> are chosen by us (<code>max_depth</code>, <code>min_samples_leaf</code>, <code>criterion</code>). <b>Model selection</b> = choose the learning algorithm and its hyperparameters through several train/evaluate loops: a trade-off between the quality of the search and the computing time.</p>
+  </div>
+
+  <div class="blk">
+    <h3>2. Holdout, validation and test</h3>
+    <ul>
+      <li><b>Holdout</b>: one random split of the supervised data X. <b>Stratification</b> (same class proportions in both parts) is essential with rare classes. The test error estimates the run-time error.</li>
+      <li><b>How much data for testing?</b> Small data set: 80/20 or 90/10; large: 70/30 is affordable. Flexible models need many training examples, simple models learn from little. Critical domains (medicine, driving) need reliable estimates. A larger test set gives a more stable estimate. Rare classes: enough of them in the test set (NordicMart: 108 churners among 900 test customers). Evaluation is cheap, training is not.</li>
+    </ul>
+    <div class="box ex"><h4>Worked example · the winner's curse</h4>
+      <p>Take 20 “models” that answer at random (coin flips), a test set of 50 records with two balanced classes, and keep the model with the best test accuracy. The expected accuracy of the winner is about <b>63%</b>, while the true accuracy of every model is 50% (computed exactly: E[max of 20 Binomial(50, 0.5)]/50 = 0.631). Selecting by the test score makes the test score optimistic.</p></div>
+    <h4>Train, validation, test</h4>
+    <ol>
+      <li>For each configuration, learn on the training set and score on the validation set.</li>
+      <li>Learn the best configuration again on training + validation.</li>
+      <li>Score once on the test set.</li>
+    </ol>
+    <div class="cols">
+      <div class="card"><h4>Pros</h4><ul><li>Fast: one training per configuration.</li><li>Hyperparameters chosen on data independent of the final test, so more reliable than plain holdout.</li></ul></div>
+      <div class="card"><h4>Cons</h4><ul><li>The choice rests on one smaller portion (the validation set): noisy, less reliable than cross-validation.</li><li>The three-way split leaves less data for learning.</li></ul></div>
+    </div>
+  </div>
+
+  <div class="blk">
+    <h3>3. Cross-validation</h3>
+    <p>Partition the training data at random into k folds (stratified if needed). k rounds: one fold for validation, k − 1 for training. Combine the k scores into a mean and a standard deviation. Every record is in training k − 1 times and in validation once. Typical values: k = 5 or 10. The final model is learned on all the training records.</p>
+    <ul>
+      <li><b>Variants</b>: stratified k-fold (class proportions in each fold; scikit-learn default for classification); repeated k-fold (several random partitions, averaged); leave-one-out (k = N: no randomness, very expensive, intrinsically non-stratified); group k-fold (all records of one individual in the same fold: several rows per customer, patient or machine).</li>
+      <li><b>Leakage inside CV</b>: each validation fold is a small future. Preparation steps (fill-in values, scaling) computed once on all the training data and then cross-validated are wrong; recompute them inside each round on its training folds. It is the lecture-09 rule applied k times.</li>
+      <li><b>Cons and pros</b>: the train/validate loop is repeated k times; but the score is averaged (more reliable, with an error bar), and the final model uses every example.</li>
+    </ul>
+    <div class="box ex"><h4>Worked example · NordicMart, decision tree, 5-fold stratified CV on 2100 training customers</h4>
+      <div class="tw"><table>
+        <thead><tr><th>max_depth</th><th>2</th><th>3</th><th>4</th><th>5</th></tr></thead>
+        <tbody><tr><td>CV accuracy (mean)</td><td>88.7</td><td>88.8</td><td>89.0</td><td>88.6</td></tr>
+        <tr><td>std</td><td>0.8</td><td>0.8</td><td>0.6</td><td>1.0</td></tr></tbody></table></div>
+      <p>The baseline is 88%, and the differences are smaller than the standard deviation. <b>1-std rule</b>: among the configurations within one std of the best, take the simplest; here depth 2 or 3. A conservative heuristic, not a statistical test. (The depth chosen in lecture 10b is 4, selected by CV.)</p></div>
+    <div class="box go"><h4>In scikit-learn</h4>
+      <span class="f">from sklearn.model_selection import GridSearchCV, StratifiedKFold
+from sklearn.pipeline import Pipeline
+from sklearn.impute import SimpleImputer
+from sklearn.preprocessing import StandardScaler
+pipe = Pipeline([("fill", SimpleImputer(strategy="median")), ("scale", StandardScaler()), ("clf", DecisionTreeClassifier())])
+gs = GridSearchCV(pipe, {"clf__max_depth": [2, 3, 4, 5]}, cv=StratifiedKFold(5, shuffle=True, random_state=0))
+gs.fit(X_train, y_train)          # fill-in and scaling are re-learned inside every fold
+gs.best_params_, gs.cv_results_["mean_test_score"], gs.cv_results_["std_test_score"]</span></div>
+  </div>
+
+  <div class="blk">
+    <h3>4. Model selection recipes</h3>
+    <div class="tw"><table>
+      <thead><tr><th>#</th><th>Recipe</th><th>Chooses on</th><th>Trainings</th><th>Verdict</th></tr></thead>
+      <tbody>
+        <tr><td>0</td><td>Zero level</td><td>none (defaults)</td><td>1</td><td>Training error: useless as an estimate.</td></tr>
+        <tr><td>1</td><td>Quick holdout</td><td>none (defaults)</td><td>1</td><td>Honest baseline, in a hurry.</td></tr>
+        <tr><td>2</td><td>Tune on test</td><td>test</td><td>c</td><td>Optimistic: avoid.</td></tr>
+        <tr><td>3</td><td>Train / validation / test</td><td>validation</td><td>c + 1</td><td>Good for large data and slow algorithms.</td></tr>
+        <tr><td>4</td><td>Cross-validation</td><td>k folds</td><td>c · k + 1</td><td>Default choice.</td></tr>
+      </tbody></table></div>
+    <p>c is the number of hyperparameter configurations. <b>Grid search</b> (<code>GridSearchCV</code>) tries every combination of the listed values; <b>random search</b> (<code>RandomizedSearchCV</code>) tries a fixed budget of random combinations.</p>
+    <div class="box ex"><h4>Worked example · counting trainings</h4><p>max_depth ∈ {2, 3, 4, 5, 6}, min_samples_leaf ∈ {1, 10, 30}, criterion ∈ {gini, entropy}: 5 · 3 · 2 = <b>30 configurations</b>. With k = 5: 30 · 5 + 1 = <b>151 trainings</b> (150 inside CV, 1 final refit).</p></div>
+    <p>The whole process: for several kinds of model, search hyperparameters (CV on the training part), estimate on the test set, and send the overall best to run time.</p>
+  </div>
+
+  <div class="blk">
+    <h3>5. How precise is a test error?</h3>
+    <p>The test set is a sample of the run-time data; another sample gives another error rate. Each test record is an independent binary experiment (correct or error). With N test records and E errors, the empirical frequency is f = E/N, while the true error probability p is unknown. For N ≥ 30, f is approximately normal around p, with standard deviation √(p(1−p)/N). Choose a confidence level 1 − α; the interval contains p with probability 1 − α.</p>
+    <div class="tw"><table>
+      <thead><tr><th>Confidence 1 − α</th><th>0.99</th><th>0.98</th><th>0.95</th><th>0.90</th><th>0.80</th><th>0.75</th><th>0.50</th></tr></thead>
+      <tbody><tr><td>z</td><td>2.58</td><td>2.33</td><td>1.96</td><td>1.64</td><td>1.28</td><td>1.15</td><td>0.67</td></tr></tbody></table></div>
+    <span class="f">simple, rough:   p ≈ f ± z · √( f (1 − f) / N )
+Wilson score:    p ∈ 1/(1 + z²/N) · [ f + z²/(2N)  ±  z · √( f(1−f)/N + z²/(4N²) ) ]   (more accurate, pessimistic)</span>
+    <div class="sym"><b>Reading the symbols</b><ul><li><code>p</code>: the <i>true</i> error rate on all future data (unknown). <code>f</code>: the error rate you <i>observed</i> on the test set = errors / N. <code>N</code>: number of test records.</li><li><code>z</code>: how many standard deviations to go out for the chosen confidence (1.96 for 95%, see the table).</li><li><code>√( f(1−f)/N )</code> is the standard error of f: the typical wobble of an observed rate, smaller when N is larger.</li><li><code>±</code> gives the two ends of the interval. The Wilson version has the same ingredients, but it is more careful when N is small or f is near 0, and never leaves [0, 1].</li></ul></div>
+    <div class="box ex"><h4>Worked examples (95%, Wilson)</h4>
+      <div class="tw"><table>
+        <thead><tr><th>Case</th><th>Errors / N</th><th>f</th><th>Interval for p</th></tr></thead>
+        <tbody>
+          <tr><td>Iris, full tree</td><td>12 / 75</td><td>16.0%</td><td>[9.4%, 25.9%]</td></tr>
+          <tr><td>Iris, depth 2</td><td>6 / 75</td><td>8.0%</td><td>[3.7%, 16.4%]</td></tr>
+          <tr><td>NordicMart, tree</td><td>110 / 900</td><td>12.2%</td><td>[10.2%, 14.5%]</td></tr>
+          <tr><td>NordicMart, baseline</td><td>108 / 900</td><td>12.0%</td><td>[10.0%, 14.3%]</td></tr>
+        </tbody></table></div>
+      <p>75 test records: very wide, overlapping intervals. 900 records: narrower, yet the tree and the baseline are indistinguishable. The width scales as 1/√N: four times the data, half the width.</p></div>
+    <div class="box key"><h4>Consequence</h4><p>Two models whose intervals overlap widely: no evidence of a difference. Report the estimate with its uncertainty, never the estimate alone.</p></div>
+  </div>
+
+  <div class="blk">
+    <h3>6. Statistical pruning (the C4.5 strategy)</h3>
+    <p>Grow the full tree, then work bottom-up. For a subtree near the leaves, let e<sub>l</sub> be the weighted pessimistic error of its leaves and e<sub>r</sub> the pessimistic error of its root turned into a leaf. <b>Prune if e<sub>r</sub> ≤ e<sub>l</sub></b>. It uses only the training data; the pessimistic error is the upper limit of a confidence interval on f.</p>
+    <div class="box ex"><h4>Worked example (z = 0.67, after Witten et al.)</h4>
+      <p>A node with N = 14, f = 5/14 has e<sub>r</sub> = 0.45 as a leaf. Its three leaves: N = 6, f = 2/6, e = 0.47; N = 2, f = 1/2, e = 0.72; N = 6, f = 2/6, e = 0.47.</p>
+      <span class="f">e_l = (6·0.47 + 2·0.72 + 6·0.47) / 14 = 0.51  &gt;  e_r = 0.45   ⇒   prune</span></div>
+    <div class="box trap"><h4>Exam traps</h4><ul>
+      <li>Recipe 2 (tuning on the test set) is the one to recognise as wrong.</li>
+      <li>CV is run on the <i>training</i> part; the test set is touched once at the end.</li>
+      <li>Grid-search cost = configurations × k, plus one final training.</li>
+      <li>Overlapping error intervals are not evidence that one model is better.</li></ul></div>
+    <p class="src">References: TSK 3.5 (model selection, statistical bounds), 3.6 (holdout and cross-validation), 3.7 (hyper-parameters), 3.8 (pitfalls), 3.9 (model comparison); Hastie, Tibshirani &amp; Friedman (2009) ch. 7 (model assessment and selection); Wilson (1927); scikit-learn user guide “Cross-validation” and “Tuning the hyper-parameters”.</p>
+  </div>
+</section>
+
+<!-- ============ L10b ============ -->
+<section class="ch" id="l10b">
+  <div class="chead"><span class="no">LECTURE 10b</span><h2>Performance measures of a classifier</h2></div>
+
+  <div class="blk">
+    <h3>1. The confusion matrix</h3>
+    <p>Open question: “best according to what?” The NordicMart tree has 87.8% accuracy, “nobody churns” has 88.0%, and the tree chosen by accuracy in the lab finds only 22 of 108 churners.</p>
+    <div class="tw"><table>
+      <thead><tr><th>NordicMart tree, test set</th><th>pred churn</th><th>pred stay</th><th>total</th></tr></thead>
+      <tbody>
+        <tr><td>true churn</td><td>TP = 26</td><td>FN = 82</td><td>108</td></tr>
+        <tr><td>true stay</td><td>FP = 28</td><td>TN = 764</td><td>792</td></tr>
+        <tr><td>total</td><td>54</td><td>846</td><td>900</td></tr>
+      </tbody></table></div>
+    <p>Accuracy = (TP + TN)/N = 790/900 = 87.8%; the test error rate is 1 − accuracy. Yet of the 54 flagged customers 26 really churn, 48%, against 12% at random. Accuracy alone is not enough: other qualities matter (speed, scalability, robustness to noisy labels, interpretability), errors have different consequences (a missed illness is often worse than a false alarm; retiring a healthy machine versus missing a failure), and with imbalanced classes accuracy is dominated by the majority.</p>
+  </div>
+
+  <div class="blk">
+    <h3>2. Precision, recall, F1</h3>
+    <div class="tw"><table>
+      <thead><tr><th>Measure</th><th>Formula</th><th>Reads as</th><th>NordicMart</th></tr></thead>
+      <tbody>
+        <tr><td>Accuracy</td><td>(TP+TN)/N</td><td>share of right decisions</td><td>790/900 = 87.8%</td></tr>
+        <tr><td>Precision</td><td>TP/(TP+FP)</td><td>among predicted positives, the true ones</td><td>26/54 = 48.1%</td></tr>
+        <tr><td>Recall (sensitivity)</td><td>TP/(TP+FN)</td><td>among true positives, those we catch</td><td>26/108 = 24.1%</td></tr>
+        <tr><td>Specificity</td><td>TN/(TN+FP)</td><td>among true negatives, those we recognise</td><td>764/792 = 96.5%</td></tr>
+        <tr><td>F1</td><td>2PR/(P+R)</td><td>harmonic mean of precision and recall</td><td>0.32</td></tr>
+      </tbody></table></div>
+    <p>Precise alarms, but three churners out of four are missed. The baseline has precision undefined and recall 0. F1 is high only if both precision and recall are high: the arithmetic mean would say 0.36, the harmonic mean 0.32.</p>
+    <div class="box key"><h4>Which measure?</h4><p>Accuracy: a first feeling, misleading with imbalanced classes. F1: always worth a look. Error costs different for positives and negatives: look at precision and recall separately. More than two classes: per-class measures and averages (next).</p></div>
+  </div>
+
+  <div class="blk">
+    <h3>3. More than two classes</h3>
+    <p>With T<sub>i</sub> the true records of class i and P<sub>i</sub> the predictions of class i: accuracy = Σ TP<sub>i</sub>/N, precision<sub>i</sub> = TP<sub>i</sub>/P<sub>i</sub> (column), recall<sub>i</sub> = TP<sub>i</sub>/T<sub>i</sub> (row).</p>
+    <div class="box ex"><h4>Worked example · three classes, 200 test records</h4>
+      <div class="tw"><table>
+        <thead><tr><th>true \ pred</th><th>a</th><th>b</th><th>c</th><th>total</th></tr></thead>
+        <tbody><tr><td>a</td><td>88</td><td>14</td><td>18</td><td>120</td></tr><tr><td>b</td><td>10</td><td>40</td><td>10</td><td>60</td></tr><tr><td>c</td><td>2</td><td>6</td><td>12</td><td>20</td></tr><tr><td>total</td><td>100</td><td>60</td><td>40</td><td>200</td></tr></tbody></table></div>
+      <p>Accuracy = (88 + 40 + 12)/200 = 0.70. Class a: precision 88/100 = 0.88, recall 88/120 = 0.73, F1 0.80. Class b: 0.67, 0.67, 0.67. Class c: precision 12/40 = 0.30, recall 12/20 = 0.60, F1 0.40.</p></div>
+    <p>One number is needed, e.g. for <code>GridSearchCV</code>: average the per-class measure m(c<sub>i</sub>).</p>
+    <div class="tw"><table>
+      <thead><tr><th>Average</th><th>Definition</th><th>Precision</th><th>Recall</th><th>F1</th><th>Use when</th></tr></thead>
+      <tbody>
+        <tr><td>macro</td><td>(1/C) Σ m(c<sub>i</sub>): every class counts the same</td><td>0.62</td><td>0.67</td><td>0.62</td><td>every class matters, rare ones too; the only one that exposes a neglected rare class</td></tr>
+        <tr><td>weighted</td><td>(1/N) Σ T<sub>i</sub> m(c<sub>i</sub>): by class size</td><td>0.76</td><td>0.70</td><td>0.72</td><td>per-class view, but frequent classes count more</td></tr>
+        <tr><td>micro</td><td>pool all TP<sub>i</sub>, FP<sub>i</sub>, FN<sub>i</sub>: every record counts the same</td><td>0.70</td><td>0.70</td><td>0.70</td><td>overall performance; equals accuracy</td></tr>
+      </tbody></table></div>
+    <p>Weighted recall = micro = accuracy, always. A rule to remember: micro asks <i>how good is each decision</i>, weighted <i>how good is each class, scaled by its size</i>, macro <i>how good is each class, all treated equally</i>.</p>
+  </div>
+
+  <div class="blk">
+    <h3>4. Taking chance into account</h3>
+    <p><b>The problem.</b> Accuracy ignores how easy the task is. If 2% of patients have a disease, “no disease” for everybody scores 98%. At NordicMart 12% of customers churn, so “nobody churns” scores 88%, while our tree scores 87.8%. The tree looks worse, yet it actually finds some churners. We need a measure of the <i>improvement over guessing</i>.</p>
+    <p><b>The baseline.</b> A <b>random classifier</b> says “churn” as often as our model does, but independently of the truth. Its accuracy is the “correct by chance” level. Two measures build on this idea: κ and MCC.</p>
+
+    <h4 style="margin:18px 0 6px">Cohen's κ: how much of the possible gain over chance did we get?</h4>
+    <span class="f">κ = (correct − correct by chance) / (perfect − correct by chance) = (Pr(o) − Pr(e)) / (1 − Pr(e))</span>
+    <div class="sym"><b>Reading the symbols</b><ul><li><code>Pr(o)</code>: the observed agreement = the accuracy (fraction of correct predictions). <code>Pr(e)</code>: the agreement expected by chance (fraction a random classifier with the same predicted proportions would get right).</li><li>Numerator: how much better than chance we are. Denominator: how much better than chance it was possible to be. So κ is “the fraction of the possible improvement we achieved”.</li></ul></div>
+    <div class="box ex"><h4>Worked example · NordicMart tree (TP 26, FN 82, FP 28, TN 764, N = 900)</h4>
+      <ol>
+        <li><b>Marginals.</b> Real churners 26 + 82 = 108, real non-churners 792. The model says “churn” 26 + 28 = 54 times and “stay” 846 times.</li>
+        <li><b>Correct by chance.</b> Churners: 108 × 54 / 900 = <b>6.5</b>. Non-churners: 792 × 846 / 900 = <b>744.5</b>. Total = <b>751</b>.</li>
+        <li><b>Actual correct.</b> 26 + 764 = <b>790</b>. Perfect would be 900.</li>
+        <li><b>κ</b> = (790 − 751) / (900 − 751) = 39 / 149 = <b>0.26</b>. The tree beats chance by 39 customers out of the 149 it could have gained: a weak but real signal.</li>
+      </ol>
+      <p>The baseline “nobody churns” says “churn” 0 times, so chance already predicts 792 correct and it gets exactly 792. Gain 0, so κ = <b>0</b>, even with 88% accuracy.</p>
+    </div>
+    <div class="box ex"><h4>Worked example · three classes (a, b, c)</h4>
+      <p>The classifier predicts a, b, c in the proportion 100 : 60 : 40 = 50% : 30% : 20%. Splitting every row of the true classes (120, 60, 20) in that proportion gives, on the diagonal, 120·0.5 + 60·0.3 + 20·0.2 = 60 + 18 + 4 = <b>82</b> correct by chance. Our classifier gets 140; the perfect one 200.</p>
+      <span class="f">gain: 140 − 82 = 58      possible: 200 − 82 = 118      κ = 58 / 118 = 0.49   (accuracy 0.70)</span></div>
+    <ul>
+      <li>Scale: 1 perfect agreement, 0 no better than chance, &lt; 0 worse than chance (−1 only in special binary cases, a perfect swap).</li>
+      <li>Pr(o) = Σ TP_i / N (the accuracy) and Pr(e) = Σ T_i·P_i / N², where T_i and P_i are the true and predicted counts of class i.</li>
+      <li>Binary shortcut: κ = 2(TP·TN − FP·FN) / [ (TP+FP)(FP+TN) + (TP+FN)(FN+TN) ].</li>
+    </ul>
+
+    <h4 style="margin:18px 0 6px">MCC: the correlation between prediction and truth</h4>
+    <span class="f">MCC = (TP·TN − FP·FN) / √((TP+FP)(TP+FN)(TN+FP)(TN+FN))        range [−1, 1]</span>
+    <div class="sym"><b>Reading the symbols</b><ul><li><code>TP, TN, FP, FN</code>: the four cells of the confusion matrix (true positives, true negatives, false positives, false negatives).</li><li>Numerator <code>TP·TN − FP·FN</code>: large when the correct cells are big and the error cells are small. Denominator: product of the four row and column totals, under a square root, which rescales the result to between −1 and 1.</li><li><code>(TP+FP)</code> = predicted positives, <code>(TP+FN)</code> = real positives, <code>(TN+FP)</code> = real negatives, <code>(TN+FN)</code> = predicted negatives.</li></ul></div>
+    <p>The numerator is large when the model is right on both classes and small when it makes many errors; the denominator rescales to −1..1. For NordicMart: numerator = 26·764 − 28·82 = 19,864 − 2,296 = 17,568; denominator = √(54 · 108 · 792 · 846) = 62,511; <b>MCC = 0.28</b>. It uses all four cells of the matrix, is 0 for the “nobody churns” baseline, and stays reliable with imbalance.</p>
+
+    <div class="box key"><h4>What to remember</h4>
+      <ul>
+        <li>With imbalanced classes never judge by accuracy alone: add κ or MCC, or precision, recall and F1.</li>
+        <li>κ asks “how much better than guessing?”; MCC asks “how correlated are prediction and truth?”. Both are 0 at chance and 1 at perfect.</li>
+        <li>For the exam, know the κ idea (observed vs expected by chance) and be able to compute it from a matrix. In the lab: <code>cohen_kappa_score</code>, <code>matthews_corrcoef</code>.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="blk">
+    <h3>5. The cost of errors</h3>
+    <p>Decisions driven by predictions: errors cost. A loan to a bad payer versus a loan refused to a good one; a false oil-spill alarm versus an undetected spill; a mail to a customer who will not buy versus a promising customer ignored.</p>
+    <div class="box ex"><h4>Worked example · NordicMart cost matrix</h4>
+      <p>A flagged customer gets an offer: €10. A churner who is not flagged: lost margin €100. Assumption: the offer keeps a churner.</p>
+      <div class="tw"><table>
+        <thead><tr><th>Strategy</th><th>FP / FN</th><th>Total cost</th></tr></thead>
+        <tbody>
+          <tr><td>nobody gets the offer</td><td>0 / 108</td><td>108 · €100 = €10,800</td></tr>
+          <tr><td>everybody gets it</td><td>792 / 0</td><td>792 · €10 = €7,920</td></tr>
+          <tr><td>tree, default threshold 0.5</td><td>28 / 82</td><td>28·10 + 82·100 = €8,480</td></tr>
+          <tr><td>tree, threshold 0.15</td><td>—</td><td><b>€6,460</b></td></tr>
+        </tbody></table></div>
+      <p>The tree at 0.5 beats “nobody” but not “everybody”; moving the threshold beats both.</p></div>
+    <p><b>Cost-sensitive learning</b> makes the learner weigh the expensive errors: resampling (alter the class proportions in the training data, e.g. duplicate the costly class; also a remedy for imbalance); instance weights if the algorithm supports them (<code>DecisionTreeClassifier(class_weight={0: 1, 1: 10})</code>, or <code>"balanced"</code>: weights inverse to class frequency); or keep the model and change the threshold.</p>
+  </div>
+
+  <div class="blk">
+    <h3>6. Probabilistic classifiers: thresholds, lift, ROC, AUC</h3>
+    <p>A crisp prediction is a label; a soft prediction is one probability per class. Choose crisp for an immediate automatic decision, soft when the prediction is part of a process with further steps (ranking, budget, human check). Crisp outputs often hide probabilities: a tree leaf holds the class fractions of its training records (the rightmost Iris leaf, 26 flowers split 1/2/23, gives P = (0.04, 0.08, 0.88)); small leaves give unreliable probabilities.</p>
+    <p><b>From probabilities to crisp</b>: for binary problems put a threshold t on Pr(positive) (default 0.5, any value is legitimate); multi-class: the class with the maximum probability. Lowering t predicts more positives: recall rises, precision usually falls. For NordicMart the cost is minimized near t = 0.15 (€6,460, below both trivial strategies).</p>
+    <h4 style="margin:18px 0 6px">The setup: what are we sorting?</h4>
+    <p>The model gives every <b>test customer</b> a score = Pr(churn). We know the real answer for each of them (the test set is labelled). <b>Positive</b> = a customer who really churned; <b>negative</b> = one who really stayed. Lift, gains and ROC all start the same way: <b>sort the customers from highest score to lowest</b>, then ask “if I act on the top k, what do I catch?”. Acting on the top k means picking a threshold just below the k-th score. Only the <b>order</b> matters, not the score values.</p>
+    <div class="box ex"><h4>Worked example · 10 test customers, 4 churners (P) and 6 stayers (N)</h4>
+      <div class="tw"><table>
+        <thead><tr><th>top k</th><th>score</th><th>really churned?</th><th>TP</th><th>FP</th><th>TP rate</th><th>FP rate</th><th>% contacted</th><th>lift</th></tr></thead>
+        <tbody>
+        <tr><td>1</td><td>0.90</td><td>P</td><td>1</td><td>0</td><td>0.25</td><td>0.00</td><td>10%</td><td>2.50</td></tr>
+        <tr><td>2</td><td>0.80</td><td>P</td><td>2</td><td>0</td><td>0.50</td><td>0.00</td><td>20%</td><td>2.50</td></tr>
+        <tr><td>3</td><td>0.70</td><td>N</td><td>2</td><td>1</td><td>0.50</td><td>0.17</td><td>30%</td><td>1.67</td></tr>
+        <tr><td>4</td><td>0.60</td><td>P</td><td>3</td><td>1</td><td>0.75</td><td>0.17</td><td>40%</td><td>1.88</td></tr>
+        <tr><td>5</td><td>0.50</td><td>N</td><td>3</td><td>2</td><td>0.75</td><td>0.33</td><td>50%</td><td>1.50</td></tr>
+        <tr><td>6</td><td>0.40</td><td>N</td><td>3</td><td>3</td><td>0.75</td><td>0.50</td><td>60%</td><td>1.25</td></tr>
+        <tr><td>7</td><td>0.30</td><td>P</td><td>4</td><td>3</td><td>1.00</td><td>0.50</td><td>70%</td><td>1.43</td></tr>
+        <tr><td>8</td><td>0.20</td><td>N</td><td>4</td><td>4</td><td>1.00</td><td>0.67</td><td>80%</td><td>1.25</td></tr>
+        <tr><td>9</td><td>0.15</td><td>N</td><td>4</td><td>5</td><td>1.00</td><td>0.83</td><td>90%</td><td>1.11</td></tr>
+        <tr><td>10</td><td>0.10</td><td>N</td><td>4</td><td>6</td><td>1.00</td><td>1.00</td><td>100%</td><td>1.00</td></tr></tbody></table></div>
+      <p>Each row is one threshold. “Top k” = everybody with a score at or above that row. TP = churners among them, FP = stayers among them. TP rate = TP / 4, FP rate = FP / 6.</p>
+    </div>
+    <h4 style="margin:18px 0 6px">Cumulative gains and lift (columns “% contacted”, “TP rate”, “lift”)</h4>
+    <p><b>Cumulative gains</b> answer: “if I contact only the top x% of customers, what % of <i>all</i> churners do I reach?”. It is the TP rate plotted against % contacted. In the table, contacting 40% (top 4) reaches 75% of the churners. Random contacting would reach 40%, so the random line is the diagonal. <b>Lift</b> = gains / x = 75% / 40% = <b>1.88</b>: the top 40% holds 1.88× more churners than a random 40% would. Lift is always highest at the top and falls to 1 when you contact everybody. Business use: with budget for 20% of customers, lift 2.5 says the model finds 2.5× more churners than picking at random.</p>
+    <h4 style="margin:18px 0 6px">ROC curve: what you are watching, and how it is drawn</h4>
+    <p>Same table, different axes: <b>x = FP rate</b> (fraction of stayers wrongly flagged, the false alarms) and <b>y = TP rate</b> (fraction of churners caught = recall). Each row of the table is <b>one point</b> (FP rate, TP rate). Lowering the threshold means walking down the table, so the curve is the path through all the points. “Up and right” is just that walk:</p>
+    <ul>
+      <li>start at (0, 0): threshold above every score, nobody flagged;</li>
+      <li>next customer in the sorted list is a <b>churner</b> → the TP rate grows → <b>step up</b> by 1/#positives (here 1/4);</li>
+      <li>next customer is a <b>stayer</b> → the FP rate grows → <b>step right</b> by 1/#negatives (here 1/6);</li>
+      <li>end at (1, 1): everybody flagged. Equal scores (ties) give one diagonal step.</li>
+    </ul>
+    <p>For our table the path is: up, up, right, up, right, right, up, right, right, right, i.e. (0,0) → (0,.25) → (0,.5) → (.17,.5) → (.17,.75) → (.33,.75) → (.5,.75) → (.5,1) → (1,1).</p>
+    <p><b>What to look at.</b> A good model puts its churners at the top of the list, so the path goes <b>up first</b> and hugs the top-left corner (catch many churners before raising many false alarms). A useless model mixes churners and stayers randomly, so the path wanders along the diagonal. Each point is a trade-off you can choose: for example, the point (0.17, 0.75) means “flag the top 4; you catch 75% of churners at the price of 17% of stayers flagged”. <b>Choosing the threshold</b> = choosing the point; the costs of the two error types (section 5) tell you which.</p>
+    <div class="box key"><h4>AUC on this example</h4>
+      <p>AUC is the area under that path. Count it per stayer: each step right happens at a TP rate of 0.5, 0.75, 0.75, 1, 1, 1, and each step is 1/6 wide: (0.5 + 0.75 + 0.75 + 1 + 1 + 1) / 6 = 5/6 = <b>0.83</b>. Equivalently, in 20 of the 24 (churner, stayer) pairs the churner has the higher score: 20/24 = 0.83. That is the meaning of AUC: the probability that a random churner is ranked above a random stayer.</p></div>
+    <span class="f">TP rate = TP / T_pos = recall          FP rate = FP / T_neg = 1 − specificity
+Drawing: sort by decreasing Pr(positive); start at (0,0) (threshold above every probability);
+lower the threshold to the next value: a positive → step up, a negative → step right,
+ties → diagonal step; end at (1,1) (everything predicted positive)</span>
+    <div class="sym"><b>Reading the symbols</b><ul><li><code>T_pos</code>, <code>T_neg</code>: how many records are <i>really</i> positive and really negative (the column totals of the confusion matrix).</li><li><code>TP rate</code> = the fraction of real positives we catch (same as recall). <code>FP rate</code> = the fraction of real negatives we wrongly flag; it equals 1 − specificity.</li><li>“Threshold” here means the cut on Pr(positive): above it we predict positive.</li></ul></div>
+    <p>Origin of the name: Receiver Operating Characteristic, born with radar signals in World War II, the trade-off between hit rate and false alarms in a noisy channel. Now the same idea with 20 customers, including some tied scores:</p>
+    <div class="box ex"><h4>Worked example · 20 NordicMart test customers (5 churners, 15 not)</h4>
+      <div class="tw"><table>
+        <thead><tr><th>threshold</th><th>0.729</th><th>0.595</th><th>0.245</th><th>0.188</th><th>0.156</th><th>0.112</th><th>0.106</th><th>0.091</th><th>0.067</th><th>0.034</th></tr></thead>
+        <tbody><tr><td>TP</td><td>1</td><td>2</td><td>2</td><td>2</td><td>3</td><td>4</td><td>4</td><td>4</td><td>4</td><td>5</td></tr>
+        <tr><td>FP</td><td>0</td><td>0</td><td>1</td><td>2</td><td>2</td><td>4</td><td>8</td><td>9</td><td>11</td><td>15</td></tr>
+        <tr><td>TP rate</td><td>0.20</td><td>0.40</td><td>0.40</td><td>0.40</td><td>0.60</td><td>0.80</td><td>0.80</td><td>0.80</td><td>0.80</td><td>1.00</td></tr>
+        <tr><td>FP rate</td><td>0.00</td><td>0.00</td><td>0.07</td><td>0.13</td><td>0.13</td><td>0.27</td><td>0.53</td><td>0.60</td><td>0.73</td><td>1.00</td></tr></tbody></table></div>
+      <figure><svg id="fig-roc" viewBox="0 0 560 330" role="img" aria-label="ROC curve of the 20-customer example with AUC 0.76."></svg>
+      <figcaption>Plotted from the table above. AUC = 0.76 (trapezoid rule).</figcaption></figure></div>
+    <p><b>AUC</b> (area under the ROC curve): one number for the whole curve, independent of the threshold. 1 = perfect ranking, 0.5 = random. Meaning: the probability that a random positive gets a higher score than a random negative. Insensitive to class proportions. <code>roc_auc_score</code>; <code>scoring="roc_auc"</code> in model selection. NordicMart tree on 900 test customers (13 distinct probabilities): AUC 0.71; t = 0.5 gives TP rate 0.24, FP rate 0.04; t = 0.15 gives 0.51 and 0.15.</p>
+    <p><b>Precision–recall curve</b>: same thresholds, axes recall and precision. The random level is the positive rate (12%). It is more informative than ROC when positives are rare. Summary: average precision (0.29 for the NordicMart tree).</p>
+    <div class="box trap"><h4>Exam traps</h4><ul>
+      <li>87.8% accuracy is below the 88.0% baseline, yet the model has signal (κ 0.26, AUC 0.71). “Best” depends on the measure.</li>
+      <li>Macro exposes the neglected rare class; micro equals accuracy; weighted recall equals accuracy too.</li>
+      <li>Lowering the threshold moves you along one fixed ROC curve: recall up, precision usually down.</li>
+      <li>You must be able to <i>draw</i> a ROC curve from a table of scores and say what AUC means.</li></ul></div>
+    <p class="src">References: TSK 4.11 (class imbalance: 4.11.2 evaluating performance, 4.11.3 optimal score threshold, 4.11.4 aggregate evaluation, ROC); 4.12 (multiclass); Cohen (1960) for κ; Matthews (1975) for MCC; Fawcett (2006); Hanley &amp; McNeil (1982) for the meaning of AUC; Saito &amp; Rehmsmeier (2015) for precision–recall under imbalance; scikit-learn user guide “Metrics and scoring”.</p>
+  </div>
+</section>
+
+<!-- ============ L11 ============ -->
+<section class="ch" id="l11">
+  <div class="chead"><span class="no">LECTURE 11</span><h2>Naïve Bayes, logistic regression, k-nearest neighbours</h2></div>
+  <p>Three more kinds of classifier with the same data and the same toolbox (NordicMart churn): probabilistic (Naïve Bayes), linear (logistic regression), instance-based (kNN).</p>
+
+  <div class="blk">
+    <h3>1. Naïve Bayes</h3>
+    <h4 style="margin:6px 0 6px">The question, and why we flip it</h4>
+    <p>For a new record with attribute values E (say: store-only customer, 3 tickets, 14 months of tenure) we want, for each class c, the probability <b>Pr(c | E)</b>: “given that I see these values, how likely is this record to belong to class c?” Then we predict the class with the highest probability. Read the bar “|” as “given that”.</p>
+    <p>Problem: we cannot count that directly. What we <i>can</i> count in the training data is the opposite direction: <b>Pr(E | c)</b>, “among the customers of class c, how often do these values appear?”. Bayes' theorem converts one into the other:</p>
+    <span class="f">Pr(c | E)  =  Pr(E | c) · Pr(c) / Pr(E)
+posterior   =  likelihood · prior / evidence</span>
+    <ul>
+      <li><b>Prior Pr(c)</b>: how common the class is before looking at the record (12% of customers churn).</li>
+      <li><b>Likelihood Pr(E | c)</b>: how typical these values are inside the class. Counted in the training data.</li>
+      <li><b>Evidence Pr(E)</b>: how common these values are overall. Same for every class, so it will disappear (see below).</li>
+      <li><b>Posterior Pr(c | E)</b>: the updated belief after seeing the record. This is the answer. General form: Pr(H | E) = Pr(E | H) · Pr(H) / Pr(E), hypothesis H, evidence E.</li>
+    </ul>
+    <div class="box ex"><h4>Worked example · one attribute, as pure counting (NordicMart)</h4>
+      <p>Imagine 1,000 customers. Prior: 12% churn, so <b>120 churners and 880 stayers</b>. From the data: 35% of churners are store-only, and 16% of stayers are store-only.</p>
+      <ol>
+        <li>Store-only churners: 0.35 × 120 = <b>42</b> (this is Pr(E | churn) · Pr(churn), the numerator of Bayes).</li>
+        <li>Store-only stayers: 0.16 × 880 ≈ <b>141</b>.</li>
+        <li>All store-only customers: 42 + 141 = <b>183</b> (this is Pr(E), the denominator: 0.18).</li>
+        <li>Among the 183 store-only customers, the churners are 42/183 = <b>23%</b>.</li>
+      </ol>
+      <span class="f">Pr(churn | store-only) = 0.35 · 0.12 / 0.18 = 0.23        prior 12% → posterior 23%</span>
+      <p>So Bayes' theorem is nothing but this: restrict to the customers who show the evidence, and see which fraction belongs to the class. It matches the direct count from the exploratory analysis (churn 23% for store-only customers, 10% for the others).</p></div>
+
+    <h4 style="margin:18px 0 6px">Many attributes: the “naïve” assumption</h4>
+    <p>A record has D attributes, E = (E<sub>1</sub>, …, E<sub>D</sub>). We would need Pr(E<sub>1</sub>, …, E<sub>D</sub> | c): how often does this <i>exact combination</i> appear inside class c? With a handful of attributes the combination almost never occurs in the training data (the weather table has 14 rows, and the new day below never appeared), so the count is 0 or meaningless.</p>
+    <p>The trick: <b>assume the attributes are independent of each other, once the class is known</b>. Then the probability of the combination is the product of the single ones:</p>
+    <span class="f">Pr(E | c) = Pr(E<sub>1</sub> | c) · Pr(E<sub>2</sub> | c) · … · Pr(E<sub>D</sub> | c)
+Pr(c | E) = Pr(E<sub>1</sub> | c) · Pr(E<sub>2</sub> | c) · … · Pr(E<sub>D</sub> | c) · Pr(c) / Pr(E)</span>
+    <p>Each factor is a simple frequency inside the class: “among the churners, what fraction is store-only?”, “among the churners, what fraction has 3+ tickets?”, and so on. <b>Training is just counting</b>, once per attribute and class. It is called naïve because the assumption is very strong and rarely true (store-only and few web sessions go together), yet the method works well in practice, especially for ranking.</p>
+
+    <div class="box ex"><h4>Worked example · a new weather day, step by step</h4>
+      <p>Counts over the 14 training days (yes / no), where “yes” = play. Class totals: 9 yes, 5 no.</p>
+      <div class="tw"><table>
+        <thead><tr><th>attribute</th><th>value</th><th>count yes</th><th>count no</th><th>Pr(value | yes)</th><th>Pr(value | no)</th></tr></thead>
+        <tbody>
+          <tr><td>outlook</td><td><b>sunny</b></td><td>2</td><td>3</td><td>2/9</td><td>3/5</td></tr>
+          <tr><td>temperature</td><td><b>cool</b></td><td>3</td><td>1</td><td>3/9</td><td>1/5</td></tr>
+          <tr><td>humidity</td><td><b>high</b></td><td>3</td><td>4</td><td>3/9</td><td>4/5</td></tr>
+          <tr><td>windy</td><td><b>true</b></td><td>3</td><td>3</td><td>3/9</td><td>3/5</td></tr>
+          <tr><td>class (prior)</td><td></td><td>9</td><td>5</td><td>9/14</td><td>5/14</td></tr>
+        </tbody></table></div>
+      <p>New day: <b>sunny, cool, high humidity, windy</b>. Should we play?</p>
+      <ol>
+        <li><b>Take the row of each observed value</b> and read the column of each class.</li>
+        <li><b>Multiply</b> the four factors and the prior, once for yes and once for no.</li>
+        <li><b>Normalize:</b> the two products are not probabilities yet (they do not add up to 1). They are the posteriors multiplied by the same unknown Pr(E). Dividing each by their sum cancels it.</li>
+      </ol>
+      <span class="f">score yes = 2/9 · 3/9 · 3/9 · 3/9 · 9/14 = 0.0053
+score no  = 3/5 · 1/5 · 4/5 · 3/5 · 5/14 = 0.0206
+Pr(yes | E) = 0.0053 / (0.0053 + 0.0206) = 20.5%        Pr(no | E) = 79.5%    → predict “no”</span>
+      <p><b>Why the answer changed.</b> The prior favours yes (64% against 36%), but the evidence points the other way: sunny, high humidity and windy are all more typical of the “no” days. The product of those three factors outweighs the prior. In <code>predict_proba</code> this is exactly what you get; the class prediction is the larger of the two.</p></div>
+
+    <h4 style="margin:18px 0 6px">The zero-frequency problem and Laplace smoothing</h4>
+    <p>New day: overcast, hot, high, windy. Overcast never occurs with “no”: Pr(overcast | no) = 0/5, so the likelihood of no is 0 whatever the other attributes say, and Pr(yes) = 100%. One zero should not veto all the other evidence.</p>
+    <span class="f">Pr(d = v_i | c) ≈ ( af(d=v_i, c) + α ) / ( af(c) + α·V )</span>
+    <div class="sym"><b>Reading the symbols</b><ul>
+      <li><code>d</code>: an attribute (outlook). <code>v<sub>i</sub></code>: one of its values (sunny, overcast, rainy). <code>c</code>: a class (yes or no).</li>
+      <li><code>af(d=v<sub>i</sub>, c)</code>: <b>absolute frequency</b>, the number of training records <i>of class c</i> where d has the value v<sub>i</sub>. For overcast and no it is 0.</li>
+      <li><code>af(c)</code>: how many training records belong to class c (5 days of “no”).</li>
+      <li><code>α</code> (alpha): the smoothing amount, the “pretend count” added to every value. α = 1 is the standard choice (Laplace); α = 0 means no smoothing.</li>
+      <li><code>V</code>: the number of different values of d (outlook has 3). We add α once for each of the V values, so the denominator grows by α·V and the probabilities still add up to 1.</li>
+    </ul></div>
+    <div class="box ex"><h4>Worked example · smoothing outlook inside the class “no” (5 days)</h4>
+      <div class="tw"><table>
+        <thead><tr><th>outlook</th><th>count in “no”</th><th>without smoothing</th><th>with Laplace (α = 1, V = 3)</th></tr></thead>
+        <tbody>
+          <tr><td>sunny</td><td>3</td><td>3/5 = 0.60</td><td>(3+1)/(5+3) = 0.500</td></tr>
+          <tr><td>overcast</td><td>0</td><td>0/5 = <b>0</b></td><td>(0+1)/(5+3) = <b>0.125</b></td></tr>
+          <tr><td>rainy</td><td>2</td><td>2/5 = 0.40</td><td>(2+1)/(5+3) = 0.375</td></tr>
+          <tr><td><b>sum</b></td><td>5</td><td>1.00</td><td>1.000</td></tr>
+        </tbody></table></div>
+      <p>Every value receives one pretend record, so nothing is impossible any more, and a little probability is taken from the frequent values and given to the unseen one. The same is done for every attribute and class (humidity, windy: V = 2).</p>
+      <p><b>Effect on the day overcast, hot, high, windy:</b> without smoothing the “no” score is 0 (one zero kills the product), so Pr(yes) = 100% however strange the other values are. With smoothing on all attributes: score yes = 5/12 · 3/12 · 4/11 · 4/11 · 9/14 = 0.00885; score no = 1/8 · 3/8 · 5/7 · 4/7 · 5/14 = 0.00683; Pr(yes) = 0.00885 / (0.00885 + 0.00683) = <b>56%</b>.</p></div>
+    <h4>Missing values, numeric attributes, and a failure case</h4>
+    <ul>
+      <li><b>Missing values</b>: no need to discard the record. To classify, omit the attribute from the product (all likelihoods grow, the normalization compensates). In training, do not count the record for that attribute: frequencies are computed over the values present.</li>
+      <li><b>Gaussian Naïve Bayes</b> for numeric attributes: within each class a normal distribution; from the training data take mean μ and standard deviation σ per attribute and class; use the density f(x) = (1/(σ√2π)) e<sup>−(x−μ)²/(2σ²)</sup> in place of the frequency. Example: f(temperature = 66 | yes) with μ = 73, σ = 6.2 is 0.0340; for sunny, 66, humidity 90, windy: likelihood yes 0.000036, no 0.000136, so Pr(yes) = 20.8%.</li>
+      <li><b>When independence fails</b>: duplicate an attribute (temperature in °F and in °C: no new information, a linear transformation). Its evidence is counted twice and 85°F is more typical of “no” days, so that factor enters squared: Pr(yes) goes from 0.57 (yes) to 0.37 (no). Correlated attributes: the same effect, milder.</li>
+    </ul>
+    <h4>Measuring probabilities: log loss</h4>
+    <p>AUC sees only the ranking; precision and recall see only the decisions at one threshold. Neither says whether a predicted 30% really means 30%. <b>Log loss</b> (cross-entropy) looks at the probability given to the class that actually occurred:</p>
+    <span class="f">ℓ = − y·ln(p) − (1 − y)·ln(1 − p)  =  − ln(probability given to the true class)        log loss = average of ℓ, lower is better
+0.9 → 0.11     0.5 → 0.69     0.1 → 2.30     → ∞ as p → 0 (rewards confidence when right, punishes it heavily when wrong)
+reference: constant 12% for every customer → 0.37 on the NordicMart test set (a useful probabilistic model must stay below it)</span>
+    <div class="sym"><b>Reading the symbols</b><ul><li><code>y</code>: the true label of the record, 1 if it is positive (churned) and 0 otherwise. <code>p</code>: the probability the model gave to “positive”. <code>ln</code>: the natural logarithm.</li><li>Only one of the two terms survives: if y = 1 the loss is −ln(p); if y = 0 it is −ln(1 − p). In both cases it is −ln of the probability given to what really happened.</li><li>Giving 0.9 to a true churner costs 0.11; giving 0.1 costs 2.30. Averaging ℓ over all records gives the log loss.</li></ul></div>
+    <p>scikit-learn: <code>log_loss</code>, <code>scoring="neg_log_loss"</code>.</p>
+    <div class="box ex"><h4>Reading the NordicMart result</h4>
+      <div class="tw"><table>
+        <thead><tr><th></th><th>CV AUC</th><th>test AUC</th><th>precision</th><th>recall</th><th>log loss</th></tr></thead>
+        <tbody>
+          <tr><td>tree (lecture 10)</td><td>0.76 ± 0.03</td><td>0.71</td><td>0.48</td><td>0.24</td><td>0.34</td></tr>
+          <tr><td>Naïve Bayes</td><td>0.79 ± 0.04</td><td>0.76</td><td>0.38</td><td>0.43</td><td>0.52</td></tr>
+          <tr><td>constant 0.12</td><td>0.5</td><td>0.5</td><td>–</td><td>0</td><td>0.37</td></tr>
+        </tbody></table></div>
+      <p>Better <i>ranking</i> than the tree (AUC), worse <i>probabilities</i> (log loss above the constant guess). Related attributes (store-only and web sessions, never bought and recency) count the same evidence more than once, like the duplicated temperature: products are pushed towards 0 and 1. Use it for ranking with a threshold chosen on validation data; do not read its numbers as real probabilities.</p></div>
+    <div class="box go"><h4>In scikit-learn</h4><p><code>GaussianNB</code> (numeric; <code>var_smoothing</code> avoids zero variances) · <code>CategoricalNB</code> (nominal attributes coded as integers; <code>alpha</code> is the Laplace smoothing) · <code>MultinomialNB</code>, <code>BernoulliNB</code> (text: word counts or presence, the classic spam filter) · <code>predict_proba</code> gives the normalized posteriors.</p></div>
+    <p><b>Summary.</b> Pros: clear semantics, training is counting (very fast, also with many attributes), often excellent ranking even when the assumption is false. Cons: degrades when assumptions fail (dependent attributes count evidence twice; non-normal numeric attributes need a transformation or another density estimate); probabilities often too extreme.</p>
+  </div>
+
+  <div class="blk">
+    <h3>2. Logistic regression</h3>
+    <h4 style="margin:6px 0 6px">The idea in three steps</h4>
+    <ol>
+      <li><b>Score.</b> Give every attribute a weight and add everything up: z = w<sub>0</sub> + w<sub>1</sub>x<sub>1</sub> + … + w<sub>D</sub>x<sub>D</sub>. A positive weight pushes towards the class “churn”, a negative one pushes away from it. This is the same weighted sum as in linear regression.</li>
+      <li><b>Squash.</b> z can be any number from −∞ to +∞, but a probability must lie between 0 and 1. The <b>sigmoid</b> σ(z) = 1 / (1 + e<sup>−z</sup>) bends z into (0, 1): z = 0 gives 0.5, large positive z gives almost 1, large negative z gives almost 0.</li>
+      <li><b>Decide.</b> p = Pr(churn | x) is the output. Predict churn when p is above a threshold (0.5 by default, any value is legitimate).</li>
+    </ol>
+    <p>Because the sigmoid is monotonic, the boundary p = 0.5 is exactly the place where z = 0, a straight line (a plane with more attributes). That is why logistic regression is a <i>linear</i> classifier.</p>
+    <span class="f">Pr(y = 1 | x) = σ(z) = 1 / (1 + e^(−z))          z = 0 → 0.5;   z → +∞ → 1;   z → −∞ → 0;   monotonic
+odds = p / (1 − p)        log-odds (logit) = ln( p / (1 − p) ) = w0 + w1·x1 + … + wD·xD      ← linear in the attributes</span>
+    <div class="sym"><b>Reading the symbols</b><ul><li><code>σ</code> (sigma): the sigmoid function. <code>e</code> ≈ 2.718. <code>z</code>: the score, the weighted sum of the attributes.</li><li><code>p</code>: the probability of the positive class. <code>odds = p/(1−p)</code>: how many times more likely positive than negative (p = 0.8 → 4 to 1). <code>ln</code> of the odds is the <b>log-odds</b> or logit.</li><li><code>w<sub>0</sub></code>: the intercept; <code>w<sub>1</sub>…w<sub>D</sub></code>: one weight per attribute; <code>x<sub>1</sub>…x<sub>D</sub></code>: the record’s attribute values. The key line says: the log-odds are exactly the weighted sum z.</li><li><code>monotonic</code>: a bigger z always gives a bigger p, so ranking by z or by p is the same.</li></ul></div>
+    <figure><svg id="fig-sigmoid" viewBox="0 0 560 240" role="img" aria-label="The sigmoid function from z = -6 to 6."></svg>
+    <figcaption>The sigmoid. Probability 0.5 at z = 0; the decision boundary w·x + w₀ = 0 is linear.</figcaption></figure>
+    <div class="box ex"><h4>Worked example · odds and log-odds</h4><p>p = 0.8: odds = 4 (“four to one”), log-odds ln 4 = 1.39. p = 0.5: odds 1, log-odds 0. p = 0.2: odds 0.25, log-odds −1.39. A linear boundary: for NordicMart with days since last buy and web sessions, the line P = 0.5 (and the line P = 0.15) separates the plane.</p></div>
+    <h4 style="margin:18px 0 6px">Why odds? Reading the weights</h4>
+    <p>The odds say “how many times more likely is churn than stay”: p = 0.8 means 4 to 1. The surprising fact: z is not the probability and not the odds, <b>z is the log-odds</b>, ln(p / (1 − p)). So every weight acts on the odds by multiplication: if x<sub>j</sub> grows by 1, the log-odds grow by w<sub>j</sub>, hence the <b>odds are multiplied by e<sup>w<sub>j</sub></sup></b>. That is where “odds × 2.35 per standard deviation” in the table below comes from (e<sup>0.85</sup> = 2.35).</p>
+    <div class="box ex"><h4>Worked example · from a customer to a probability</h4>
+      <p><b>Goal:</b> turn one customer into a churn probability, using the weights of the table further below (illustrative numbers). Three steps.</p>
+      <p><b>Step 1 · describe the customer in z-scores.</b> The attributes were <i>standardized</i>: value = (raw − average) / std, so <b>0 means “exactly average”</b>, +1 means “one standard deviation above average”, −1 “one below”. Our customer:</p>
+      <ul>
+        <li>days since last buy: 52 days <i>more</i> than average, and 52 days is one std → <b>+1</b>;</li>
+        <li>web sessions per month: 2.1 <i>fewer</i> than average, and 2.1 is one std → <b>−1</b>;</li>
+        <li>support tickets: exactly average → <b>0</b>.</li>
+      </ul>
+      <p><b>Step 2 · start from the intercept.</b> The intercept w<sub>0</sub> is the score of a customer with all z-scores 0, i.e. an <i>average customer</i>. It makes the model reproduce the base rate: with w<sub>0</sub> = −2.0 the sigmoid gives 1 / (1 + e<sup>2</sup>) = 0.119 ≈ the <b>12%</b> of customers who churn. So knowing nothing special about a customer, the model says 12%.</p>
+      <p><b>Step 3 · add each attribute’s contribution</b> (weight × z-score), then squash with the sigmoid:</p>
+      <div class="tw"><table>
+        <thead><tr><th>term</th><th>weight</th><th>customer z-score</th><th>contribution to z</th></tr></thead>
+        <tbody>
+          <tr><td>intercept</td><td>−2.00</td><td>(always 1)</td><td>−2.00</td></tr>
+          <tr><td>days since last buy</td><td>+0.85</td><td>+1</td><td>+0.85</td></tr>
+          <tr><td>web sessions</td><td>−0.48</td><td>−1</td><td>+0.48 (negative × negative)</td></tr>
+          <tr><td>tickets</td><td>+0.37</td><td>0</td><td>0.00</td></tr>
+          <tr><td><b>total z</b></td><td></td><td></td><td><b>−0.67</b></td></tr>
+        </tbody></table></div>
+      <span class="f">z = −2.0 + 0.85·(+1) + (−0.48)·(−1) + 0.37·(0) = −0.67
+p = 1 / (1 + e^(0.67)) = 1 / (1 + 1.95) = 0.34        odds = p / (1 − p) = e^(−0.67) = 0.51</span>
+      <p><b>Reading it:</b> the customer starts at the 12% of an average customer; being more inactive (+0.85) and using the website less (+0.48) push the score up, so the probability rises to <b>34%</b>. With threshold 0.5 we would predict “stay” (0.34 &lt; 0.5); with the cost-optimal threshold 0.15 we would send the offer.</p></div>
+    <ul>
+      <li><b>Learning</b>: the weights minimize the average log loss on the training data (confident wrong predictions cost most). Equivalent to <b>maximum likelihood</b>: L(w) = Π p<sub>i</sub><sup>y<sub>i</sub></sup>(1 − p<sub>i</sub>)<sup>1−y<sub>i</sub></sup>, and −ln L is the sum of the log losses. Smooth and convex in w: a single minimum, solved numerically by the library.</li>
+      <li><b>Interpreting a weight</b>: w<sub>j</sub> is the change of the log-odds when x<sub>j</sub> grows by 1, all other attributes fixed; equivalently the odds are multiplied by e<sup>w<sub>j</sub></sup>. Its sign gives the direction of the effect. With standardized attributes, “grows by 1” is one standard deviation, so sizes are comparable across attributes. The intercept w<sub>0</sub> is the log-odds of the average customer (all z-scores 0). Correlated attributes share the weight: single values are unstable, read them with care.</li>
+    </ul>
+    <div class="box ex"><h4>Worked example · what “learning the weights” means</h4>
+      <p>Three training customers: A churned, B stayed, C churned. Try two sets of weights and look at the probability each gives to <i>what really happened</i>.</p>
+      <div class="tw"><table>
+        <thead><tr><th>weights</th><th>A (churned)</th><th>B (stayed)</th><th>C (churned)</th><th>likelihood (product)</th><th>log loss (mean of −ln)</th></tr></thead>
+        <tbody>
+          <tr><td>poor weights</td><td>p = 0.50 → 0.50</td><td>p = 0.50 → 0.50</td><td>p = 0.50 → 0.50</td><td>0.125</td><td>0.693</td></tr>
+          <tr><td>better weights</td><td>p = 0.90 → 0.90</td><td>p = 0.20 → 0.80</td><td>p = 0.60 → 0.60</td><td><b>0.432</b></td><td><b>0.280</b></td></tr>
+        </tbody></table></div>
+      <p>For a stayer, the probability given to the truth is 1 − p. Better weights make the data we actually observed <i>more probable</i>: the product is larger. Maximizing this product (<b>maximum likelihood</b>) is the same as minimizing the average −ln, the log loss. The library searches the weights numerically; the surface is convex, so there is one minimum and no local traps.</p>
+      <details class="extra"><summary><span class="xt">Extra!</span> Why is it convex?</summary><div class="xb">
+      <p>“Convex” means bowl-shaped: the straight segment between any two points of the surface never goes below the surface, so rolling downhill always ends at the same single bottom. Three facts give this:</p>
+      <ol>
+        <li><b>One record.</b> Its loss as a function of its own score z is −ln σ(z) for a churner and −ln(1 − σ(z)) for a stayer. Both curves bend upward everywhere: the curvature is σ(z)·(1 − σ(z)), which is always positive (largest, 0.25, at z = 0). Example: for a churner the loss falls steeply when z goes from −2 to 0, less from 0 to 2, and never turns back up.</li>
+        <li><b>Through the weights.</b> The score z = w<sub>0</sub> + w<sub>1</sub>x<sub>1</sub> + … is a <i>straight</i> function of the weights, and a convex function of a straight function stays convex.</li>
+        <li><b>Over all records.</b> The average of convex functions is convex.</li>
+      </ol>
+      <p>So the log loss is a single bowl in the weights. Two remarks: (a) a neural network is <i>not</i> like this: its loss has many valleys, which is why training it needs care; (b) if the two classes are perfectly separable, the bowl has no bottom (the weights keep growing), and the regularization penalty (<code>C</code>) fixes that by adding its own bowl.</p>
+      </div></details>
+    </div>
+    <div class="box ex"><h4>Worked example · NordicMart weights (8 standardized attributes)</h4>
+      <p><b>Where these weights come from:</b> they are illustrative, chosen to look like what a fit on churn data would give; NordicMart is an invented data set, so nothing was trained here. With real data you would get the weights from <code>LogisticRegression().fit(X_train_scaled, y_train)</code> and read them in <code>model.coef_</code> (the intercept is <code>model.intercept_</code>). What matters is how to read them: sign = direction, size = strength per standard deviation, e<sup>weight</sup> = factor on the odds.</p>
+      <div class="tw"><table>
+        <thead><tr><th>attribute</th><th>weight per std</th><th>odds × per std</th><th>one std is</th></tr></thead>
+        <tbody>
+          <tr><td>days since last buy</td><td>+0.85</td><td>2.35</td><td>52 days</td></tr>
+          <tr><td>web sessions / month</td><td>−0.48</td><td>0.62</td><td>2.1 sessions</td></tr>
+          <tr><td>tickets (90 days)</td><td>+0.37</td><td>1.45</td><td>0.8 tickets</td></tr>
+          <tr><td>store-only</td><td>+0.30</td><td>1.35</td><td></td></tr>
+          <tr><td>tier, log spend, age, never bought</td><td>|w| &lt; 0.14</td><td></td><td></td></tr>
+        </tbody></table></div>
+      <p>Size = importance (on comparable scales). A customer 52 days more inactive has 2.35 times the odds of churning, everything else equal.</p></div>
+    <h4>Standardization</h4>
+    <p>Attributes are on very different scales (NordicMart: spend std 685 EUR, tickets std 0.8, recency std 52 days). z-score: x′ = (x − μ)/σ, mean 0 and standard deviation 1; μ and σ are <i>learned from data</i>: training data only, recomputed in each CV round (<code>StandardScaler</code> inside a <code>Pipeline</code>). Computing them on all the data before splitting is leakage, the same rule as the fill-in values of lectures 09 and 10a.</p>
+    <div class="box ex"><h4>Worked example · what a z-score says</h4><p>Recency has std 52 days. A customer 52 days above the average has z = +1; one 26 days below has z = −0.5. Tickets have std 0.8: a customer with 1.6 tickets more than average has z = +2. After standardizing, “+1” always means “one std above average”, so the weights are comparable: 0.85 for recency against 0.37 for tickets says recency matters more.</p></div>
+    <h4>In practice</h4>
+    <ul>
+      <li><code>C</code> is the penalty on large weights (regularization): <b>small C = strong penalty</b>, weights shrink towards 0. NordicMart: CV AUC 0.82 for any C from 0.001 to 100.</li>
+      <li><code>class_weight="balanced"</code> for imbalanced classes. Non-linear boundaries: add new attributes (squares, products). <code>predict_proba</code> gives probabilities; the threshold is our choice.</li>
+      <li>NordicMart: CV AUC 0.82 ± 0.04, test AUC 0.79, precision 0.53, recall 0.19, log loss 0.31: <b>best ranking and best probabilities so far</b>. At threshold 0.5 it raises few alarms (40), precise, low recall; at threshold 0.15: precision 0.30, recall 0.60.</li>
+    </ul>
+    <p><b>Summary.</b> Pros: simple, fast, interpretable weights; outputs probabilities, usually well calibrated; a strong baseline for any binary problem. Cons: linear in the log-odds (non-linear patterns need new attributes); sensitive to correlated attributes; needs scaling and complete data. Typical uses: credit scoring, medical risk, churn, response to campaigns.</p>
+    <div class="box go"><h4>In scikit-learn</h4>
+      <span class="f">from sklearn.linear_model import LogisticRegression
+pipe = Pipeline([("scale", StandardScaler()), ("lr", LogisticRegression(C=1.0, class_weight=None, max_iter=1000))])
+pipe.fit(X_train, y_train)
+p = pipe.predict_proba(X_test)[:, 1]        # then choose the threshold with validation data or costs</span></div>
+  </div>
+
+  <div class="blk">
+    <h3>3. More than two classes with binary classifiers</h3>
+    <p>Some classifiers are intrinsically binary (logistic regression, SVM in the next lecture). Two ways to handle C &gt; 2 classes: extend the algorithm, or combine several binary classifiers with a strategy.</p>
+    <div class="tw"><table>
+      <thead><tr><th>Strategy</th><th>Problems</th><th>How it predicts</th><th>3 classes (Iris)</th><th>10 classes (digits)</th></tr></thead>
+      <tbody>
+        <tr><td>One-vs-rest (OVR, one-vs-all)</td><td>C: class c against all the others</td><td>class whose classifier gives the highest score</td><td>3</td><td>10</td></tr>
+        <tr><td>One-vs-one (OVO)</td><td>C(C−1)/2: one per pair, only the records of its two classes</td><td>voting: each pair votes for its winner</td><td>3</td><td>45</td></tr>
+      </tbody></table></div>
+    <div class="box ex"><h4>Worked example · classes A, B, C, one new record</h4>
+      <p><b>One-vs-rest</b>: three classifiers “A vs not-A”, “B vs not-B”, “C vs not-C”. For the record they give scores 0.70, 0.40 and 0.20: the highest wins, so the prediction is <b>A</b>.</p>
+      <p><b>One-vs-one</b>: three classifiers, one per pair, each trained only on the records of its two classes. A vs B says A, A vs C says A, B vs C says B. Votes: A 2, B 1, C 0, so the prediction is <b>A</b>. With 10 classes it would be 45 small votes instead of 10 big problems.</p></div>
+    <p>OVO: more problems, each smaller; attractive when training time grows fast with N. OVR: each problem is imbalanced (with balanced classes, 1 positive to C − 1 negatives). scikit-learn: <code>OneVsRestClassifier</code>, <code>OneVsOneClassifier</code> wrap any binary estimator; <code>SVC</code> uses OVO internally.</p>
+  </div>
+
+  <div class="blk">
+    <h3>4. k-nearest neighbours</h3>
+    <p>kNN keeps all the training data: <b>the model is the training set</b> (instance-based, lazy learning). To classify a new record: compute its distance from every training record, take the k closest (the neighbours), and take the majority vote of their classes. Hyperparameters: k and the distance function.</p>
+    <div class="box ex"><h4>Worked example · classify a new customer by hand</h4>
+      <p>Six training customers with two standardized attributes (recency, web sessions) and their class (C = churned, S = stayed). New customer q = (0.8, −0.2). Distance = √(Δrecency² + Δweb²); for P2 it is √(0.2² + 0.2²) = 0.28.</p>
+      <div class="tw"><table>
+        <thead><tr><th>customer</th><th>recency</th><th>web</th><th>class</th><th>distance to q</th><th>rank</th></tr></thead>
+        <tbody>
+          <tr><td>P2</td><td>1.0</td><td>0.0</td><td>C</td><td>0.28</td><td>1</td></tr>
+          <tr><td>P1</td><td>0.5</td><td>−0.5</td><td>C</td><td>0.42</td><td>2</td></tr>
+          <tr><td>P5</td><td>−0.5</td><td>−1.0</td><td>S</td><td>1.53</td><td>3</td></tr>
+          <tr><td>P6</td><td>2.0</td><td>−1.5</td><td>S</td><td>1.77</td><td>4</td></tr>
+          <tr><td>P4</td><td>0.0</td><td>1.5</td><td>S</td><td>1.88</td><td>5</td></tr>
+          <tr><td>P3</td><td>−1.0</td><td>1.0</td><td>S</td><td>2.16</td><td>6</td></tr>
+        </tbody></table></div>
+      <p><b>k = 1</b>: the nearest is P2, so q is <b>C</b>. <b>k = 3</b>: P2, P1, P5 = C, C, S, so <b>C</b> (probability 2/3). <b>k = 5</b>: C, C, S, S, S, so <b>S</b> (churn probability 2/5). The prediction depends on k.</p></div>
+    <p><b>Distance functions</b>: Euclidean √Σ(x<sub>j</sub> − x′<sub>j</sub>)² (default); Manhattan Σ|x<sub>j</sub> − x′<sub>j</sub>|; Minkowski (Σ|x<sub>j</sub> − x′<sub>j</sub>|<sup>q</sup>)<sup>1/q</sup> includes both; Mahalanobis accounts for scales and correlations; nominal attributes: 0 if equal, 1 if different.</p>
+    <div class="box ex"><h4>Worked example · scale matters</h4>
+      <p>Customer A against B: spend differs by 100 EUR; A against C: tickets differ by 3. Raw units: d(A,B) = 100 ≫ d(A,C) = 3, as if B were far and C close. Standardized: d(A,B) = 100/685 = 0.15 and d(A,C) = 3/0.78 = 3.8, the opposite verdict. Without scaling, the attribute with the largest numbers decides, so <b>always standardize for kNN</b>. All attributes count, relevant or not.</p></div>
+    <ul>
+      <li><b>The choice of k</b> (Iris, sepal length and width): k = 1 gives jagged decision regions that follow every point (overfitting); k = 75 gives smooth, coarse regions (underfitting). Choose k as a complexity hyperparameter, by CV. NordicMart: with k = 401 at threshold 0.5 there is <i>no alarm at all</i>.</li>
+      <li><b>Cost</b>: no training; prediction costs O(N·D) per record (distances to all N records), index structures (KD-tree, ball tree) help; the whole training set stays in memory.</li>
+      <li><b>Curse of dimensionality</b>: every extra attribute adds a term to the distance, and irrelevant attributes add noise but count as much as the useful ones. With many attributes the nearest and the farthest neighbours end up at almost the same distance, so “the k closest” stops meaning “the k most similar”. Remedies: keep few relevant attributes, or reduce the dimension first. Missing values are not handled: fill them in first. Probabilities are the fraction of the k votes.</li>
+    </ul>
+  </div>
+
+  <div class="blk">
+    <h3>5. Comparing the four classifiers on NordicMart</h3>
+    <div class="sym"><b>How to read the table</b><ul>
+      <li><code>k</code> (in “kNN (k = 401)”): the number of neighbours that vote. With k = 401 each prediction is the share of churners among the 401 closest customers. A large k gives smooth probabilities; it was picked by cross-validation among candidate values. Do not confuse it with the k of k-fold CV, the number of folds.</li>
+      <li><code>t</code>: the <b>decision threshold</b> on the predicted probability of churn: we predict “churn” when the probability is at least t. t = 0.5 is the default; t = 0.15 is the cost-optimal one here (an offer costs €10, a missed churner €100, so it pays to flag even customers with 15% risk).</li>
+      <li><code>cost at t = 0.15</code>: total cost on the test set = €10 × false positives (wasted offers) + €100 × false negatives (churners missed). Lower is better.</li>
+      <li><code>κ at t = 0.5</code>: Cohen’s kappa when using the default threshold 0.5. kNN scores 0 because with k = 401 no customer has more than 50% churners among their neighbours, so it never predicts churn at t = 0.5.</li>
+      <li><code>CV AUC</code>: mean ± std of the AUC over the cross-validation folds (training data); <code>test AUC</code>: the AUC on the test set, measured once.</li>
+    </ul></div>
+    <div class="tw"><table>
+      <thead><tr><th>Model</th><th>CV AUC</th><th>test AUC</th><th>cost at t = 0.15</th><th>κ at t = 0.5</th></tr></thead>
+      <tbody>
+        <tr><td>tree (depth 4)</td><td>0.76 ± 0.03</td><td>0.71</td><td>€6,460</td><td>0.26</td></tr>
+        <tr><td>Naïve Bayes</td><td>0.79 ± 0.04</td><td>0.76</td><td>€6,180</td><td>0.32</td></tr>
+        <tr><td>logistic regression</td><td>0.82 ± 0.04</td><td>0.79</td><td>€5,800</td><td>0.23</td></tr>
+        <tr><td>kNN (k = 401)</td><td>0.82 ± 0.03</td><td>0.77</td><td>€6,530</td><td>0.00</td></tr>
+      </tbody></table></div>
+    <p><b>Choose on CV</b>: logistic regression and kNN are within the noise, so prefer the simpler, faster, interpretable one (logistic regression). The test set confirms it. Costs: €10,800 for “nobody” and €7,920 for “everybody” bracket the table. κ at 0.5 depends on the threshold more than on the model (kNN raises no alarm, so κ = 0).</p>
+    <div class="box trap"><h4>Exam traps</h4><ul>
+      <li>Ranking quality (AUC) and probability quality (log loss) are different qualities.</li>
+      <li>Naïve Bayes: say why the independence assumption fails and why it still ranks well.</li>
+      <li>Laplace smoothing: know the formula and a numeric example ((0+1)/(5+3)).</li>
+      <li>Standardization is learned on training data only, inside each CV round.</li>
+      <li>OVR gives C problems, OVO gives C(C−1)/2.</li></ul></div>
+    <p class="src">References: TSK 4.3 (nearest neighbor), 4.4 (naive Bayes), 4.6 (logistic regression), 4.12 (multiclass); Witten, Frank &amp; Hall (2011) for the Naïve Bayes presentation; Domingos &amp; Pazzani (1997) on why naïve Bayes works; Cover &amp; Hart (1967) for nearest neighbours; scikit-learn user guide “Naive Bayes”, “Linear models”, “Nearest Neighbors”, “Multiclass and multioutput”.</p>
+  </div>
+</section>
+
+<!-- CHEAT SHEET -->
+<section class="ch" id="cheat">
+  <div class="chead"><span class="no">REFERENCE</span><h2>Cheat sheet</h2></div>
+  <h3>Formulas</h3>
+  <div class="tw"><table>
+    <thead><tr><th>Concept</th><th>Formula</th></tr></thead>
+    <tbody>
+      <tr><td>Entropy</td><td class="m">H = −Σ p log2 p · max log2 V</td></tr>
+      <tr><td>Information gain</td><td class="m">IG = H(parent) − Σ (N_i/N) H(child_i)</td></tr>
+      <tr><td>Gini · misclassification</td><td class="m">1 − Σ f_j² · 1 − max f_j</td></tr>
+      <tr><td>CV scoring cost</td><td class="m">trainings = c·k + 1</td></tr>
+      <tr><td>Error interval</td><td class="m">f ± z√(f(1−f)/N) · z95 = 1.96 · width ∝ 1/√N</td></tr>
+      <tr><td>Precision · recall · specificity</td><td class="m">TP/(TP+FP) · TP/(TP+FN) · TN/(TN+FP)</td></tr>
+      <tr><td>F1</td><td class="m">2PR/(P+R)</td></tr>
+      <tr><td>κ</td><td class="m">(Pr(o) − Pr(e))/(1 − Pr(e))</td></tr>
+      <tr><td>MCC</td><td class="m">(TP·TN − FP·FN)/√((TP+FP)(TP+FN)(TN+FP)(TN+FN))</td></tr>
+      <tr><td>TP rate · FP rate</td><td class="m">TP/T_pos · FP/T_neg</td></tr>
+      <tr><td>Naïve Bayes</td><td class="m">Pr(c|E) ∝ Pr(c) Π Pr(E_i|c) · Laplace (n+α)/(N_c+αV)</td></tr>
+      <tr><td>Log loss</td><td class="m">−[y ln p + (1−y) ln(1−p)]</td></tr>
+      <tr><td>Logistic regression</td><td class="m">p = 1/(1+e^−z) · log-odds = w·x + w0 · odds × e^w</td></tr>
+      <tr><td>OVR · OVO</td><td class="m">C · C(C−1)/2</td></tr>
+    </tbody></table></div>
+  <h3>Which scikit-learn function for which idea</h3>
+  <div class="tw"><table>
+    <thead><tr><th>Idea</th><th>scikit-learn</th></tr></thead>
+    <tbody>
+      <tr><td>Split · stratified split</td><td><code>train_test_split(X, y, test_size=0.25, stratify=y, random_state=0)</code></td></tr>
+      <tr><td>Tree</td><td><code>DecisionTreeClassifier(criterion, max_depth, min_samples_leaf, ccp_alpha)</code></td></tr>
+      <tr><td>Cross-validation</td><td><code>cross_val_score</code>, <code>StratifiedKFold</code>, <code>GroupKFold</code></td></tr>
+      <tr><td>Hyperparameter search</td><td><code>GridSearchCV</code>, <code>RandomizedSearchCV</code> (with <code>scoring=</code>)</td></tr>
+      <tr><td>No leakage</td><td><code>Pipeline([("scale", StandardScaler()), ("clf", …)])</code></td></tr>
+      <tr><td>Measures</td><td><code>confusion_matrix</code>, <code>classification_report</code>, <code>precision_score</code>, <code>recall_score</code>, <code>f1_score(average="macro")</code>, <code>cohen_kappa_score</code>, <code>matthews_corrcoef</code></td></tr>
+      <tr><td>Probabilities, ROC</td><td><code>predict_proba</code>, <code>roc_curve</code>, <code>roc_auc_score</code>, <code>RocCurveDisplay</code>, <code>log_loss</code></td></tr>
+      <tr><td>Costs</td><td><code>class_weight={0:1, 1:10}</code> or <code>"balanced"</code>, or move the threshold</td></tr>
+      <tr><td>Other classifiers</td><td><code>GaussianNB</code>, <code>CategoricalNB</code>, <code>LogisticRegression(C=…)</code>, <code>KNeighborsClassifier(n_neighbors=…)</code>, <code>OneVsRestClassifier</code></td></tr>
+    </tbody></table></div>
+  <h3>Easy-to-confuse pairs</h3>
+  <div class="tw"><table>
+    <thead><tr><th>Pair</th><th>Difference</th></tr></thead>
+    <tbody>
+      <tr><td>parameter · hyperparameter</td><td>learned from data · chosen by us</td></tr>
+      <tr><td>training error · generalization error</td><td>optimistic, on learning data · what we care about, estimated on test</td></tr>
+      <tr><td>validation set · test set</td><td>used to choose · used once to report</td></tr>
+      <tr><td>underfitting · overfitting</td><td>both errors high · training low, test high</td></tr>
+      <tr><td>precision · recall</td><td>of the predicted positives · of the true positives</td></tr>
+      <tr><td>macro · weighted · micro</td><td>classes equal · classes by size · records equal (= accuracy)</td></tr>
+      <tr><td>ROC · precision–recall</td><td>TP rate vs FP rate · precision vs recall; PR better with rare positives</td></tr>
+      <tr><td>AUC · log loss</td><td>ranking quality · quality of the probability values</td></tr>
+      <tr><td>OVR · OVO</td><td>C problems vs all · C(C−1)/2 problems on pairs</td></tr>
+      <tr><td>association · cause</td><td>a tree or a weight shows prediction, not causation</td></tr>
+    </tbody></table></div>
+</section>
+
+<!-- REFERENCES -->
+<section class="ch" id="refs">
+  <div class="chead"><span class="no">REFERENCES</span><h2>Where to read more</h2></div>
+  <h3>Books</h3>
+  <ul class="refs">
+    <li>Tan, P.-N., Steinbach, M., Karpatne, A., Kumar, V. (2019). <i>Introduction to Data Mining</i>, 2nd ed. Pearson. Ch. 3 (classification, decision trees, overfitting, model selection and evaluation) and ch. 4 (nearest neighbor, naive Bayes, logistic regression, class imbalance, multiclass). Book site with slides: <a href="https://www-users.cse.umn.edu/~kumar001/dmbook/index.php">www-users.cse.umn.edu/~kumar001/dmbook</a>.</li>
+    <li>Witten, I. H., Frank, E., Hall, M. A., Pal, C. J. (2016). <i>Data Mining: Practical Machine Learning Tools and Techniques</i>, 4th ed. Morgan Kaufmann. Ch. 4 (basic methods: weather data, naive Bayes, trees), ch. 5 (evaluation, cost-sensitive).</li>
+    <li>Hastie, T., Tibshirani, R., Friedman, J. (2009). <i>The Elements of Statistical Learning</i>, 2nd ed. Springer. <a href="https://doi.org/10.1007/978-0-387-84858-7">doi:10.1007/978-0-387-84858-7</a>. Ch. 7 (model assessment and selection, cross-validation).</li>
+  </ul>
+  <h3>Papers</h3>
+  <ul class="refs">
+    <li>Shannon, C. E. (1948). A mathematical theory of communication. <i>Bell System Technical Journal</i> 27.</li>
+    <li>Quinlan, J. R. (1986). Induction of decision trees. <i>Machine Learning</i> 1(1):81–106. · Quinlan, J. R. (1993). <i>C4.5: Programs for Machine Learning</i>. Morgan Kaufmann.</li>
+    <li>Breiman, L., Friedman, J., Olshen, R., Stone, C. (1984). <i>Classification and Regression Trees</i>. Wadsworth (Gini index, CART).</li>
+    <li>Fayyad, U. M., Irani, K. B. (1992). On the handling of continuous-valued attributes in decision tree generation. <i>Machine Learning</i> 8:87–102.</li>
+    <li>Wilson, E. B. (1927). Probable inference, the law of succession, and statistical inference. <i>Journal of the American Statistical Association</i> 22(158):209–212.</li>
+    <li>Cohen, J. (1960). A coefficient of agreement for nominal scales. <i>Educational and Psychological Measurement</i> 20(1):37–46. <a href="http://dx.doi.org/10.1177/001316446002000104">doi:10.1177/001316446002000104</a>.</li>
+    <li>Matthews, B. W. (1975). Comparison of the predicted and observed secondary structure of T4 phage lysozyme. <i>Biochimica et Biophysica Acta</i> 405:442–451 (MCC).</li>
+    <li>Hanley, J. A., McNeil, B. J. (1982). The meaning and use of the area under a receiver operating characteristic (ROC) curve. <i>Radiology</i> 143(1):29–36. · Fawcett, T. (2006). An introduction to ROC analysis. <i>Pattern Recognition Letters</i> 27(8):861–874.</li>
+    <li>Saito, T., Rehmsmeier, M. (2015). The precision-recall plot is more informative than the ROC plot when evaluating binary classifiers on imbalanced datasets. <i>PLOS ONE</i> 10(3):e0118432.</li>
+    <li>Domingos, P., Pazzani, M. (1997). On the optimality of the simple Bayesian classifier under zero-one loss. <i>Machine Learning</i> 29:103–130. · Cover, T., Hart, P. (1967). Nearest neighbor pattern classification. <i>IEEE Transactions on Information Theory</i> 13(1):21–27.</li>
+  </ul>
+  <h3>Documentation</h3>
+  <ul class="refs">
+    <li><a href="https://scikit-learn.org/stable/modules/tree.html">scikit-learn: Decision Trees</a> · <a href="https://scikit-learn.org/stable/modules/cross_validation.html">Cross-validation</a> · <a href="https://scikit-learn.org/stable/modules/grid_search.html">Tuning the hyper-parameters</a> · <a href="https://scikit-learn.org/stable/modules/model_evaluation.html">Metrics and scoring</a></li>
+    <li><a href="https://scikit-learn.org/stable/modules/naive_bayes.html">Naive Bayes</a> · <a href="https://scikit-learn.org/stable/modules/linear_model.html#logistic-regression">Logistic regression</a> · <a href="https://scikit-learn.org/stable/modules/neighbors.html">Nearest Neighbors</a> · <a href="https://scikit-learn.org/stable/modules/multiclass.html">Multiclass</a></li>
+    <li>Course lab repository: <a href="https://github.com/bladerun16/MLDM_Unibo_public">github.com/bladerun16/MLDM_Unibo_public</a>.</li>
+  </ul>
+</section>
+
+<footer>
+  <span>Figures marked “schematic” show shape only. Worked examples use the course's data sets (weather, Iris, NordicMart); every number was recomputed.</span>
+  <span>Study order for review: 08 → 09 → 10a → 10b → 11, then the cheat sheet; use the practice page for flashcards, multiple choice and written problems.</span>
+</footer>
+</div>
+
+<script>
+(function(){
+  var NS='http://www.w3.org/2000/svg';
+  function el(svg,tag,a,txt){var e=document.createElementNS(NS,tag);for(var k in a)e.setAttribute(k,a[k]);if(txt!==undefined)e.textContent=txt;svg.appendChild(e);return e;}
+  function axes(svg,x0,y0,x1,y1,xl,yl){
+    el(svg,'line',{x1:x0,y1:y1,x2:x1,y2:y1,style:'stroke:var(--muted);stroke-width:1.2'});
+    el(svg,'line',{x1:x0,y1:y0,x2:x0,y2:y1,style:'stroke:var(--muted);stroke-width:1.2'});
+    el(svg,'text',{x:(x0+x1)/2,y:y1+34,'text-anchor':'middle',style:'fill:var(--muted);font:12px IBM Plex Sans,sans-serif'},xl);
+    var t=el(svg,'text',{x:14,y:(y0+y1)/2,'text-anchor':'middle',transform:'rotate(-90 14 '+((y0+y1)/2)+')',style:'fill:var(--muted);font:12px IBM Plex Sans,sans-serif'},yl);
+  }
+  function poly(svg,pts,col,w,dash){
+    var d=pts.map(function(p,i){return (i?'L':'M')+p[0].toFixed(1)+','+p[1].toFixed(1);}).join(' ');
+    el(svg,'path',{d:d,style:'fill:none;stroke:'+col+';stroke-width:'+(w||2.4)+';'+(dash?'stroke-dasharray:'+dash:'')});
+  }
+  function tick(svg,x,y,txt,anchor){el(svg,'text',{x:x,y:y,'text-anchor':anchor||'middle',style:'fill:var(--muted);font:11px IBM Plex Mono,monospace'},txt);}
+
+  /* error vs complexity (schematic) */
+  function errCurves(id,xl){
+    var s=document.getElementById(id); if(!s) return;
+    var X0=56,X1=530,Y0=24,Y1=206; axes(s,X0,Y0,X1,Y1,xl,'error');
+    var tr=[],te=[];
+    for(var i=0;i<=40;i++){var u=i/40; var x=X0+u*(X1-X0);
+      var a=0.08+0.8*Math.exp(-3.2*u); var b=0.12+0.62*Math.exp(-4*u)+0.5*Math.pow(Math.max(0,u-0.35),1.8);
+      tr.push([x,Y1-a*(Y1-Y0)/0.95]); te.push([x,Y1-Math.min(b,0.93)*(Y1-Y0)/0.95]);}
+    poly(s,tr,'var(--ex)',2.6); poly(s,te,'var(--trap)',2.6);
+    el(s,'text',{x:X1-4,y:tr[40][1]-8,'text-anchor':'end',style:'fill:var(--ex);font:600 12px IBM Plex Sans,sans-serif'},'training error');
+    el(s,'text',{x:X1-4,y:te[40][1]-8,'text-anchor':'end',style:'fill:var(--trap);font:600 12px IBM Plex Sans,sans-serif'},'test error');
+    el(s,'text',{x:X0+60,y:Y0+14,style:'fill:var(--muted);font:12px IBM Plex Sans,sans-serif'},'underfitting');
+    el(s,'text',{x:X1-70,y:Y0+14,'text-anchor':'middle',style:'fill:var(--muted);font:12px IBM Plex Sans,sans-serif'},'overfitting');
+    var xm=X0+0.38*(X1-X0); el(s,'line',{x1:xm,y1:Y0,x2:xm,y2:Y1,style:'stroke:var(--line);stroke-width:1.2;stroke-dasharray:4 4'});
+    el(s,'text',{x:xm,y:Y0-6,'text-anchor':'middle',style:'fill:var(--muted);font:11px IBM Plex Sans,sans-serif'},'sweet spot');
+  }
+  errCurves('fig-complexity','model complexity (simple → flexible)');
+  errCurves('fig-depth','maximum tree depth (shallow → deep)');
+
+  /* entropy */
+  (function(){var s=document.getElementById('fig-entropy'); if(!s) return;
+    var X0=56,X1=530,Y0=22,Y1=200; axes(s,X0,Y0,X1,Y1,'probability p of one symbol','H(p), bits');
+    var pts=[]; for(var i=1;i<=199;i++){var p=i/200; var h=-(p*Math.log2(p)+(1-p)*Math.log2(1-p)); pts.push([X0+p*(X1-X0),Y1-h*(Y1-Y0)]);}
+    pts.unshift([X0,Y1]); pts.push([X1,Y1]); poly(s,pts,'var(--accent)',2.8);
+    [0,0.25,0.5,0.75,1].forEach(function(p){tick(s,X0+p*(X1-X0),Y1+16,p.toFixed(2));});
+    [0,0.5,1].forEach(function(h){tick(s,X0-6,Y1-h*(Y1-Y0)+4,h.toString(),'end');});
+    var px=X0+0.5*(X1-X0); el(s,'circle',{cx:px,cy:Y0,r:4.5,style:'fill:var(--accent)'});
+    el(s,'text',{x:px+10,y:Y0+4,style:'fill:var(--ink);font:600 12px IBM Plex Sans,sans-serif'},'p = 0.5: 1 bit');
+    var p9=0.9,h9=-(p9*Math.log2(p9)+(1-p9)*Math.log2(1-p9)); var x9=X0+p9*(X1-X0), y9=Y1-h9*(Y1-Y0);
+    el(s,'circle',{cx:x9,cy:y9,r:4,style:'fill:var(--accent)'});
+    el(s,'text',{x:x9-8,y:y9-8,'text-anchor':'end',style:'fill:var(--ink);font:12px IBM Plex Sans,sans-serif'},'p = 0.9: 0.47 bits');
+  })();
+
+  /* ROC (20 customers) */
+  (function(){var s=document.getElementById('fig-roc'); if(!s) return;
+    var X0=60,X1=520,Y0=18,Y1=270; axes(s,X0,Y0,X1,Y1,'false positive rate','true positive rate');
+    var tp=[0,1,2,2,2,3,4,4,4,4,5], fp=[0,0,0,1,2,2,4,8,9,11,15];
+    var pts=tp.map(function(t,i){return [X0+(fp[i]/15)*(X1-X0), Y1-(t/5)*(Y1-Y0)];});
+    poly(s,[[X0,Y1],[X1,Y0]],'var(--muted)',1.4,'5 5');
+    var area=pts.concat([[X1,Y1]]).map(function(p){return p[0].toFixed(1)+','+p[1].toFixed(1);}).join(' ');
+    el(s,'polygon',{points:area,style:'fill:var(--accent);opacity:.14'});
+    poly(s,pts,'var(--accent)',2.8);
+    pts.forEach(function(p){el(s,'circle',{cx:p[0],cy:p[1],r:3.6,style:'fill:var(--accent)'});});
+    [0,0.5,1].forEach(function(v){tick(s,X0+v*(X1-X0),Y1+16,v.toString());tick(s,X0-6,Y1-v*(Y1-Y0)+4,v.toString(),'end');});
+    el(s,'text',{x:X0+250,y:Y1-60,style:'fill:var(--ink);font:600 13px IBM Plex Sans,sans-serif'},'AUC = 0.76');
+    el(s,'text',{x:X0+250,y:Y1-42,style:'fill:var(--muted);font:12px IBM Plex Sans,sans-serif'},'dashed line: random, AUC = 0.5');
+  })();
+
+  /* sigmoid */
+  (function(){var s=document.getElementById('fig-sigmoid'); if(!s) return;
+    var X0=56,X1=530,Y0=20,Y1=196; axes(s,X0,Y0,X1,Y1,'score z = w·x + w₀','Pr(y = 1 | x)');
+    var pts=[]; for(var i=0;i<=120;i++){var z=-6+i*0.1; var p=1/(1+Math.exp(-z)); pts.push([X0+(z+6)/12*(X1-X0),Y1-p*(Y1-Y0)]);}
+    poly(s,[[X0,Y1-0.5*(Y1-Y0)],[X1,Y1-0.5*(Y1-Y0)]],'var(--line)',1.2,'4 4');
+    poly(s,pts,'var(--accent)',2.8);
+    [-6,-3,0,3,6].forEach(function(z){tick(s,X0+(z+6)/12*(X1-X0),Y1+16,z.toString());});
+    [0,0.5,1].forEach(function(v){tick(s,X0-6,Y1-v*(Y1-Y0)+4,v.toString(),'end');});
+    var cx=X0+0.5*(X1-X0),cy=Y1-0.5*(Y1-Y0); el(s,'circle',{cx:cx,cy:cy,r:4.5,style:'fill:var(--accent)'});
+    el(s,'text',{x:cx+10,y:cy+16,style:'fill:var(--ink);font:12px IBM Plex Sans,sans-serif'},'z = 0 → 0.5');
+  })();
+})();
+</script>
+<script>
+/* syntax highlighting + hover/tap glossary for formula blocks */
+(function(){
+  var TIPS={
+   'Pr':'Probability. Pr(A | B) reads: probability of A, given that B is known.',
+   'Pr(o)':'Observed agreement = the accuracy: fraction of predictions that are correct.',
+   'Pr(e)':'Agreement expected by chance: what a random classifier with the same predicted proportions gets right.',
+   'IG':'Information gain: class entropy before the split minus the weighted entropy after it.',
+   'H':'Entropy: average surprise in bits. 0 = pure node, 1 = 50/50 for two classes.',
+   'Gini':'Gini index: 1 − Σ f². Another impurity measure; 0 = pure.',
+   'Entropy':'Average surprise in bits of the class distribution; 0 = pure.',
+   'af':'Absolute frequency: a plain count of records.',
+   'α':'Smoothing amount: the pretend count added to each value (Laplace: α = 1; 0 = no smoothing).',
+   'V':'Number of distinct values of the attribute.',
+   'TP':'True positives: real positives that were predicted positive.',
+   'FP':'False positives: real negatives wrongly predicted positive (false alarms).',
+   'TN':'True negatives: real negatives predicted negative.',
+   'FN':'False negatives: real positives that were missed.',
+   'T_pos':'Number of really positive records (TP + FN).',
+   'T_neg':'Number of really negative records (TN + FP).',
+   'recall':'Fraction of real positives found: TP / (TP + FN). Same as TP rate.',
+   'specificity':'Fraction of real negatives correctly left alone: TN / (TN + FP).',
+   'κ':'Cohen’s kappa: fraction of the possible improvement over chance that the classifier achieves.',
+   'MCC':'Matthews correlation coefficient: correlation between prediction and truth, from −1 to 1.',
+   'AUC':'Area under the ROC curve: probability that a random positive is scored above a random negative.',
+   'σ':'The sigmoid function: squashes any number into the range 0 to 1.',
+   'z':'In logistic regression: the score, the weighted sum of the attributes. In error intervals: the number of standard deviations for the chosen confidence (1.96 for 95%).',
+   'e':'Euler’s number, about 2.718 (base of the natural logarithm).',
+   'ln':'Natural logarithm (base e). ln(1) = 0; ln of a number below 1 is negative.',
+   'log2':'Logarithm in base 2: the number of bits. log2(0.5) = −1.',
+   'log':'Logarithm.',
+   'max':'Maximum: keep the largest value.',
+   'min':'Minimum: keep the smallest value.',
+   'Σ':'Sum: add up the term for every value of the index.',
+   '√':'Square root.',
+   '±':'Plus or minus: gives the two ends of an interval.',
+   '≈':'Approximately equal.',
+   'θ':'Theta: the model’s parameters, the numbers learned from the data.',
+   'M':'The model: a function that maps a record to a predicted class.',
+   'x':'One record: the list of its attribute values.',
+   'X':'The set of training records (those that reach this node).',
+   'y':'The true label: 1 for the positive class, 0 for the negative class.',
+   'y_pred':'The class predicted by the model.',
+   'p_j':'Probability of symbol / class j.',
+   'f_j':'Fraction of the node’s records that belong to class j.',
+   'N_i':'Number of records in branch (child) i.',
+   'N':'Number of records.',
+   'D':'Number of attributes.',
+   'C':'Number of classes.',
+   'c':'A class.',
+   'd':'An attribute (a column of the data).',
+   't':'A threshold on a numeric attribute.',
+   'v_i':'The i-th possible value of the attribute.',
+   'E':'Evidence: the attribute values of the record being classified.',
+   'p':'A probability. In the interval formulas: the true (unknown) error rate.',
+   'f':'The observed error rate on the test set: errors / N.',
+   'w0':'Intercept: the log-odds when all attributes are 0 (the average customer, once standardized).',
+   'w1':'Weight of attribute 1: how much the log-odds change per unit of x1.',
+   'wD':'Weight of the last attribute.',
+   'x1':'Value of attribute 1.','xD':'Value of attribute D.',
+   'odds':'p / (1 − p): how many times more likely positive than negative. 0.8 → 4 to 1.',
+   'ℓ':'Loss of one record: minus the log of the probability given to what really happened.'
+  };
+  var re=/(#[^\n]*)|(\b(?:from|import|return|if|else|for|in|def|print|is|inner|holds)\b)|(Pr\([oe]\))|(\b(?:Pr|IG|Gini|Entropy|execute|buildTree|af|log|ln|max|min|exp|sqrt|criterion|GridSearchCV|StratifiedKFold|Pipeline|StandardScaler|LogisticRegression|DecisionTreeClassifier|cross_val_score|predict_proba|fit)(?:_\w+|\d)?\b)|(\bMCC\b|\bAUC\b)|(\d+(?:\.\d+)?%?)|([=≈+−·\/×±≥≤&<>→⇒∈Σ√∝*])|([A-Za-zασθκℓ][A-Za-z0-9_]*)/g;
+  function fnTip(tok){ if(TIPS[tok]) return TIPS[tok]; var m=/^(log2|log|ln|max|min|Pr|IG|Gini|Entropy|af)(?:_\w+)?$/.exec(tok); return m?TIPS[m[1]]:null; }
+  document.querySelectorAll('.f').forEach(function(box){
+    var isCode=/import |sklearn/.test(box.textContent);
+    var w=document.createTreeWalker(box,NodeFilter.SHOW_TEXT),nodes=[],n;
+    while((n=w.nextNode())) nodes.push(n);
+    nodes.forEach(function(t){
+      var text=t.nodeValue, frag=document.createDocumentFragment(), last=0, m, changed=false; re.lastIndex=0;
+      while((m=re.exec(text))){
+        var cls=m[1]?'tk-c':m[2]?'tk-k':(m[3]||m[4])?'tk-k':m[5]?'tk-s':m[6]?'tk-n':m[7]?'tk-o':'', tip=null;
+        if(!isCode){ if(m[3]||m[4]) tip=fnTip(m[0]); else if(m[5]||m[7]||m[8]) tip=TIPS[m[0]]||null; }
+        if(m[8] && !tip) continue;               /* plain word: leave as text */
+        if(m.index>last) frag.appendChild(document.createTextNode(text.slice(last,m.index)));
+        var sp=document.createElement('span'); sp.className=cls+(tip?' tt':''); if(tip) sp.setAttribute('data-tip',tip);
+        sp.textContent=m[0]; frag.appendChild(sp); last=m.index+m[0].length; changed=true;
+      }
+      if(!changed) return;
+      if(last<text.length) frag.appendChild(document.createTextNode(text.slice(last)));
+      t.parentNode.replaceChild(frag,t);
+    });
+  });
+  var tip=document.createElement('div'); tip.id='tip'; tip.setAttribute('role','tooltip'); document.body.appendChild(tip);
+  var cur=null, shownAt=0, shownY=0;
+  function show(el){ cur=el; shownAt=Date.now(); shownY=window.scrollY; tip.textContent=el.getAttribute('data-tip'); tip.style.opacity='1';
+    var r=el.getBoundingClientRect(), tw=tip.offsetWidth, th=tip.offsetHeight;
+    var x=Math.min(Math.max(8,r.left+r.width/2-tw/2), innerWidth-tw-8), y=r.top-th-8; if(y<8) y=r.bottom+8;
+    tip.style.left=x+'px'; tip.style.top=y+'px'; }
+  function hide(){ cur=null; tip.style.opacity='0'; }
+  var canHover=window.matchMedia&&window.matchMedia('(hover: hover)').matches;
+  if(canHover){
+  document.addEventListener('mouseover',function(e){ var el=e.target.closest&&e.target.closest('.tt'); if(el) show(el); });
+  document.addEventListener('mouseout',function(e){ var el=e.target.closest&&e.target.closest('.tt'); if(el) hide(); });
+  }
+  document.addEventListener('click',function(e){ var el=e.target.closest&&e.target.closest('.tt'); if(el&&cur!==el) show(el); else if(el&&canHover&&Date.now()-shownAt<500) return; else hide(); });
+  window.addEventListener('scroll',function(){ if(cur && Math.abs(window.scrollY-shownY)>40) hide(); },{passive:true});
+})();
+</script>
+<script>
+/* glossary: definitions on hover/tap for key terms anywhere in the text */
+(function(){
+  var G=[
+   ['maximum[- ]likelihood','Choose the parameters that make the observed training data as probable as possible. For logistic regression this is the same as minimizing the log loss.'],
+   ['likelihood','How probable the observed data (or evidence) is under a given model or class, Pr(E | c). Higher = the model explains the data better.'],
+   ['log-odds|logit','ln(p / (1 − p)). In logistic regression the score z is exactly the log-odds of the positive class.'],
+   ['odds','p / (1 − p): how many times more likely the event is than not. p = 0.8 means odds of 4 to 1.'],
+   ['z-scores?|standardi[sz]ed|standardi[sz]ation|standardi[sz]e','Rescaling a value as (x − mean) / std: 0 = average, +1 = one standard deviation above, −1 = one below. It makes attributes comparable.'],
+   ['sigmoid','σ(z) = 1 / (1 + e^(−z)): squashes any number into the range 0 to 1 (0 maps to 0.5).'],
+   ['information gain','Entropy before a split minus the weighted entropy of the children: how much the split reduces uncertainty about the class.'],
+   ['entropy','Average surprise, in bits, of the class distribution. 0 = pure node, 1 bit = 50/50 for two classes.'],
+   ['gini(?: index)?','Impurity measure 1 − Σ f². 0 for a pure node, 0.5 at most for two classes.'],
+   ['impurity','How mixed the classes are inside a node. 0 = all records have the same class.'],
+   ['overfitting|overfit','The model memorizes the training data, noise included: low training error but high error on new data.'],
+   ['underfitting|underfit','The model is too simple to capture the pattern: high error on both training and test data.'],
+   ['generali[sz]ation error','Error on new, unseen data: what we really care about, estimated on a test set.'],
+   ['training error','Error on the data the model was trained on. It is optimistic: never use it to judge the model.'],
+   ['majority-class baseline|baseline','A trivial reference (for example always predicting the most frequent class). A model is interesting only if it beats it.'],
+   ['cross-validation|k-fold(?: cv| cross-validation)?','Split the training data into k folds; train on k − 1, validate on the remaining one, rotate, and average the k scores. It is a measurement tool: the fold models are discarded.'],
+   ['hyperparameters?','A setting chosen before training (max_depth, k, C…), not learned from the data; selected with validation.'],
+   ['pruning|pruned|prune','Cutting a tree back to reduce overfitting. Pre-pruning stops growth early; post-pruning removes branches afterwards.'],
+   ['greedy','Takes the best choice at each step without looking ahead: fast, but not guaranteed to be globally optimal.'],
+   ['(?:target|data) leakage|leak(?:s|age)?','Information that would not be available at prediction time (from the test set or from the future) gets into training, so the score is too good to be true.'],
+   ['confusion matrix','Table of TP, FP, FN and TN counts comparing predicted and true classes.'],
+   ['precision','TP / (TP + FP): among the records predicted positive, the fraction that really are positive.'],
+   ['recall|sensitivity','TP / (TP + FN): among the real positives, the fraction we found (also the TP rate).'],
+   ['specificity','TN / (TN + FP): among the real negatives, the fraction correctly left alone.'],
+   ['F1(?:-score)?','Harmonic mean of precision and recall, 2PR / (P + R). It is low if either one is low.'],
+   ['accuracy','Fraction of correct predictions. Misleading when the classes are imbalanced.'],
+   ['ROC(?: curve)?','Plot of the TP rate (y) against the FP rate (x) for every threshold. Hugging the top-left corner = good; the diagonal = random.'],
+   ['AUC','Area under the ROC curve: the probability that a random positive is scored above a random negative. 0.5 = random, 1 = perfect.'],
+   ['cumulative gains?','Share of all positives found among the top x% of records, ranked by score. Random contact gives the diagonal.'],
+   ['lift','Gains divided by the fraction contacted: how many times more positives than contacting at random.'],
+   ['threshold','A cut-off: on a probability, above it we predict positive; on a numeric attribute in a tree, the split value t.'],
+   ['log loss','Average of −ln(probability given to the true class). It punishes confident wrong predictions; 0 is perfect.'],
+   ['cost matrix','Table with the cost of each outcome (TP, FP, FN, TN), used to pick the threshold or model with the lowest total cost.'],
+   ['cohen[’\']s (?:κ|kappa)|(?<![A-Za-z])κ(?![A-Za-z])|kappa','Fraction of the possible improvement over chance that the classifier achieves: (Pr(o) − Pr(e)) / (1 − Pr(e)). 0 = chance, 1 = perfect.'],
+   ['MCC|matthews','Matthews correlation coefficient: correlation between prediction and truth, from −1 to 1; 0 = chance.'],
+   ['prior','Pr(c): how common the class is before looking at the record.'],
+   ['posterior','Pr(c | E): the probability of the class after seeing the record; the model’s answer.'],
+   ['laplace(?: smoothing)?','Add a pretend count α (usually 1) to every value so that no probability is exactly 0.'],
+   ['conditional independence|naïve assumption|naive assumption','Attributes are assumed independent of each other once the class is known: the “naïve” assumption.'],
+   ['one-vs-rest|ovr','Multiclass strategy: C classifiers “class k against all the others”; the highest score wins.'],
+   ['one-vs-one|ovo','Multiclass strategy: one classifier per pair of classes, C(C − 1)/2 in all, combined by majority vote.'],
+   ['regulari[sz]ation','A penalty on large weights that keeps the model simple and reduces overfitting (in scikit-learn a smaller C means stronger regularization).'],
+   ['convex','Bowl-shaped: a single minimum, no local traps.'],
+   ['intercept','The constant term w0: the score when all attributes are 0.'],
+   ['k-nearest neighbou?rs?|kNN','Classifies a record by the majority class among the k training records closest to it.'],
+   ['curse of dimensionality','With many attributes all distances become similar, so “nearest” loses its meaning.'],
+   ['euclidean(?: distance)?','Straight-line distance: √Σ(aᵢ − bᵢ)².'],
+   ['standard deviations?|\\bstd\\b','Typical spread of a variable around its mean.'],
+   ['standard error','Typical wobble of an estimate; for an error rate f it is √(f(1 − f)/N), and it shrinks as N grows.'],
+   ['wilson(?: interval| score)?|confidence interval','A range likely to contain the true value. Wilson’s version works better for small N or rates near 0 or 1.'],
+   ['winner[’\']s curse','The best of many noisy scores is optimistically biased: choosing by validation score inflates it, hence a separate test set.'],
+   ['1-std rule','Among the models within one standard error of the best, choose the simplest.'],
+   ['imbalanced|class imbalance','One class is much rarer than the other (for example 12% churners); accuracy then misleads.'],
+   ['stratified','Keeps the class proportions the same in every fold or split.'],
+   ['hold-out','A single split of the data into a training part and a test part.'],
+   ['validation set','Data used to choose hyperparameters or models, kept separate from the final test set.'],
+   ['test set','Data kept aside and used once, at the end, to estimate the generalization error.']
+  ];
+  var tips=G.map(function(g){return g[1];});
+  var src='(?<![\\w-])(?:'+G.map(function(g){return '('+g[0]+')';}).join('|')+')(?![\\w-])';
+  var re=new RegExp(src,'gi');
+  var skip='script,style,.f,code,pre,h1,h2,h3,h4,button,textarea,.tt,#tip,svg,nav,a,summary,th';
+  var w=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT,{acceptNode:function(n){
+    if(!n.nodeValue.trim()) return NodeFilter.FILTER_REJECT;
+    var p=n.parentElement; return (p&&p.closest(skip))?NodeFilter.FILTER_REJECT:NodeFilter.FILTER_ACCEPT; }});
+  var nodes=[],n; while((n=w.nextNode())) nodes.push(n);
+  nodes.forEach(function(t){
+    var text=t.nodeValue, frag=document.createDocumentFragment(), last=0, m, changed=false; re.lastIndex=0;
+    while((m=re.exec(text))){
+      var gi=-1; for(var i=1;i<m.length;i++){ if(m[i]!==undefined){ gi=i-1; break; } }
+      if(gi<0) continue;
+      if(m.index>last) frag.appendChild(document.createTextNode(text.slice(last,m.index)));
+      var sp=document.createElement('span'); sp.className='tt'; sp.setAttribute('data-tip',tips[gi]); sp.textContent=m[0];
+      frag.appendChild(sp); last=m.index+m[0].length; changed=true;
+    }
+    if(!changed) return;
+    if(last<text.length) frag.appendChild(document.createTextNode(text.slice(last)));
+    t.parentNode.replaceChild(frag,t);
+  });
+})();
+</script>
+</body>
+</html>
