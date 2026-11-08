@@ -1,25 +1,37 @@
 # material
 oi
 
-Study material for the Unibo MSc in Artificial Intelligence, published as static pages on Cloudflare Pages.
+Study material for the Unibo MSc in Artificial Intelligence, published as static pages (Cloudflare Worker with static assets).
 
 | Page | What it is |
 |---|---|
-| `mldm/classification-guide/` | Complete explanatory guide: classification, decision trees, validation, model selection, performance measures, Naïve Bayes, logistic regression, kNN |
-| `mldm/classification-review/` | One-hour timed review: flashcards, multiple choice, written problems, weak spots |
-| `mldm/briefing-08-11/` | 30-minute catch-up briefing for lectures 08 to 11 |
+| `public/mldm/classification-guide/` | Complete explanatory guide: classification, decision trees, validation, model selection, performance measures, Naïve Bayes, logistic regression, kNN |
+| `public/mldm/classification-review/` | One-hour timed review: flashcards, multiple choice, written problems, weak spots |
+| `public/mldm/briefing-08-11/` | 30-minute catch-up briefing for lectures 08 to 11 |
 
 Every page is one self-contained `index.html`, so there is no build step.
 
-## Deploy (Cloudflare Pages)
+## Deploy (Cloudflare Workers with static assets)
 
-Connect this repo in Workers & Pages, leave the build command empty and set the output directory to `/`. Add the custom domain under Custom domains. `_headers` asks search engines not to index the pages.
+The site is a Worker (`src/worker.js`) that serves the static files in `public/` after a password check. `wrangler.jsonc` describes it; its `name` must match the Worker's name in the Cloudflare dashboard.
 
-## Password
+- Connect this repo in Workers & Pages (Import a repository). Keep the default deploy command `npx wrangler deploy`, no build command. Every push to `main` deploys.
+- Add the custom domain in the Worker's Settings, Domains & Routes.
+- **Password**: set a secret named `SITE_PASSWORD` in the Worker's Settings, Variables and Secrets (type Secret), then redeploy. Without it the site answers 500. Visitors sign in once and a 30-day cookie keeps them in; changing the secret signs everybody out.
+- The gate protects the deployed site, not this repository: while the repo is public its files are readable on GitHub. Make the repo private if the content should not be public.
 
-`functions/_middleware.js` (a Cloudflare Pages Function) asks for a password before serving any page and keeps the visitor signed in for 30 days with a cookie. The password is not in the repo: set it as a **secret** named `SITE_PASSWORD` in Pages > Settings > Variables and Secrets (Production, and Preview if wanted), then redeploy. Without it the site answers 500. To change the password, edit the secret and redeploy; every old cookie stops working.
+## Layout
 
-The gate protects the deployed site, not this repository: while the repo is public its files are readable on GitHub. Make the repo private if the content should not be public (Pages works with private repos).
+```
+public/                 static files served by the Worker
+  index.html            landing page with links
+  _headers              extra response headers
+  mldm/<page>/index.html
+src/worker.js           password gate + static assets
+wrangler.jsonc          Worker config
+```
+
+A Cloudflare Pages `functions/` directory is not used: with `functions/` next to static files `wrangler deploy` refuses to build.
 
 ## Notes
 
