@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+/* Layout: single study column (max 780px) under a sticky section bar; one deck, one question list, one problem sheet. */
+:root{
+  --bg:#f3f4f7; --surface:#ffffff; --sunk:#e7e9f0; --ink:#181b25; --muted:#5a5f70; --line:#d6d9e3;
+  --accent:#34509e; --accent-soft:#e0e6f5; --accent-ink:#ffffff;
+  --ok:#1f7a3d; --ok-soft:#e1f3e6; --bad:#b3362f; --bad-soft:#f8e3e1;
+  --t-unc:#7a4cc2; --t-basics:#34509e; --t-cont:#0e7d72; --t-infer:#a3456a; --t-bayes:#9a6a10;
+  --f-display:"Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --f-body:"IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --f-mono:"IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+  --r:10px;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#12141b; --surface:#1a1d27; --sunk:#222634; --ink:#e5e7ef; --muted:#9ca1b3; --line:#2e3243;
+  --accent:#8fa8f0; --accent-soft:#1f2a45; --accent-ink:#10131c;
+  --ok:#6fd08e; --ok-soft:#173222; --bad:#f08a80; --bad-soft:#3a1d1a;
+  --t-unc:#b79bf0; --t-basics:#8fa8f0; --t-cont:#5cc9bb; --t-infer:#e58bb0; --t-bayes:#e3b45a;
+  color-scheme:dark }}
+:root[data-theme="dark"]{
+  --bg:#12141b; --surface:#1a1d27; --sunk:#222634; --ink:#e5e7ef; --muted:#9ca1b3; --line:#2e3243;
+  --accent:#8fa8f0; --accent-soft:#1f2a45; --accent-ink:#10131c;
+  --ok:#6fd08e; --ok-soft:#173222; --bad:#f08a80; --bad-soft:#3a1d1a;
+  --t-unc:#b79bf0; --t-basics:#8fa8f0; --t-cont:#5cc9bb; --t-infer:#e58bb0; --t-bayes:#e3b45a;
+  color-scheme:dark }
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.55}
+.wrap{max-width:780px;margin:0 auto;padding-inline:16px;padding-block:28px 80px}
+h1,h2,h3{font-family:var(--f-display);text-wrap:balance;margin:0;line-height:1.15}
+h1{font-size:clamp(2rem,6vw,2.7rem);font-weight:750;letter-spacing:-.01em}
+h2{font-size:1.5rem;font-weight:750}
+h3{font-size:1.1rem;font-weight:600}
+p{margin:0}
+code,.mono{font-family:var(--f-mono);font-size:.92em}
+.eyebrow{font-size:.74rem;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.lede{color:var(--muted);max-width:62ch}
+header.top{display:grid;gap:12px;margin-bottom:22px}
+.plan{display:grid;grid-template-columns:10fr 15fr 35fr;gap:4px;margin-top:6px}
+.plan div{background:var(--sunk);border-radius:6px;padding:8px 10px;min-width:0}
+.plan b{display:block;font-size:.85rem}
+.plan span{font-size:.78rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.plan div.now{background:var(--accent-soft);outline:1.5px solid var(--accent)}
+@media (max-width:520px){.plan{grid-template-columns:1fr}}
+.bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);border-bottom:1px solid var(--line);margin-inline:-16px;padding:10px 16px;display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.tabs{display:flex;gap:4px;flex-wrap:wrap}
+.tab{font:600 .9rem var(--f-body);padding:7px 12px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer}
+.tab[aria-selected="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.timer{margin-left:auto;display:flex;gap:6px;align-items:center}
+.clock{font:500 1rem var(--f-mono);font-variant-numeric:tabular-nums;min-width:4.2ch;text-align:right}
+button{font-family:var(--f-body)}
+.btn{font:600 .88rem var(--f-body);padding:7px 12px;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer}
+.btn:hover{border-color:var(--accent)}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.btn:focus-visible,.tab:focus-visible,.opt:focus-visible,.fcard:focus-visible,summary:focus-visible,textarea:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+section.pane{display:grid;gap:18px;padding-top:22px}
+section.pane[hidden]{display:none}
+.pane-head{display:grid;gap:6px}
+.tag{display:inline-block;font:600 .7rem var(--f-body);letter-spacing:.06em;text-transform:uppercase;padding:2px 8px;border-radius:999px;border:1px solid currentColor}
+.tag.unc{color:var(--t-unc)} .tag.basics{color:var(--t-basics)} .tag.cont{color:var(--t-cont)} .tag.infer{color:var(--t-infer)} .tag.bayes{color:var(--t-bayes)}
+.ref{font-size:.78rem;color:var(--muted)}
+.deck{display:grid;gap:12px}
+.fcard{position:relative;min-height:250px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:22px;display:grid;align-content:space-between;gap:16px;cursor:pointer;text-align:left;color:var(--ink);width:100%;font:inherit}
+.fcard .side{font-size:.74rem;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;font-weight:600}
+.fcard .q{font-family:var(--f-display);font-size:1.45rem;font-weight:600;line-height:1.25;text-wrap:balance}
+.fcard .a{font-size:1.02rem;line-height:1.6}
+.fcard.flipped{background:var(--sunk)}
+.fmeta{display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap}
+.fcontrols{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.fcontrols .grow{flex:1}
+.counter{font-variant-numeric:tabular-nums;color:var(--muted);font-size:.88rem}
+.pile{display:flex;gap:6px;flex-wrap:wrap}
+.pile .btn.ok{color:var(--ok)} .pile .btn.again{color:var(--bad)}
+.progress{height:6px;border-radius:99px;background:var(--sunk);overflow:hidden}
+.progress i{display:block;height:100%;background:var(--ok);width:0;transition:width .3s}
+.mcq{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:18px;display:grid;gap:12px}
+.mcq .qh{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap}
+.mcq .num{font:600 .85rem var(--f-mono);color:var(--muted)}
+.mcq .stem{font-weight:500}
+.opts{display:grid;gap:6px}
+.opt{display:flex;gap:10px;text-align:left;font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:9px 12px;cursor:pointer;width:100%}
+.opt .k{font:600 .85rem var(--f-mono);color:var(--muted);flex:none;width:1.3em}
+.opt:hover:not(:disabled){border-color:var(--accent)}
+.opt:disabled{cursor:default}
+.opt.right{background:var(--ok-soft);border-color:var(--ok)}
+.opt.wrong{background:var(--bad-soft);border-color:var(--bad)}
+.why{font-size:.94rem;border-left:3px solid var(--accent);padding:4px 0 4px 12px;color:var(--ink)}
+.why b{font-weight:600}
+.score{font:600 .9rem var(--f-body)}
+.prob{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:20px;display:grid;gap:14px}
+.prob .ph{display:flex;justify-content:space-between;gap:10px;align-items:baseline;flex-wrap:wrap}
+.prob ol,.prob ul{margin:0;padding-left:1.3em;display:grid;gap:4px}
+.mins{font:500 .8rem var(--f-mono);color:var(--muted)}
+.conv{font-size:.88rem;color:var(--muted);background:var(--sunk);border-radius:8px;padding:10px 12px}
+textarea{width:100%;min-height:120px;resize:vertical;font:400 .95rem/1.5 var(--f-mono);color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:10px}
+details.ans{border-top:1px dashed var(--line);padding-top:10px}
+details.ans summary{cursor:pointer;font-weight:600;color:var(--accent)}
+details.ans .body{display:grid;gap:10px;padding-top:10px}
+.selfrate{display:flex;gap:6px;flex-wrap:wrap;align-items:center;font-size:.85rem;color:var(--muted)}
+.selfrate .btn[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.tbl{overflow-x:auto}
+table{border-collapse:collapse;font-size:.9rem;font-variant-numeric:tabular-nums;min-width:100%}
+th,td{border-bottom:1px solid var(--line);padding:6px 8px;text-align:left;vertical-align:top}
+th{font-weight:600;color:var(--muted);font-size:.8rem;letter-spacing:.03em}
+table.joint td,table.joint th{text-align:center}
+table.joint td:first-child,table.joint th:first-child{text-align:left}
+.refcard{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px;display:grid;gap:8px}
+.optional{border-style:dashed}
+.note{font-size:.85rem;color:var(--muted)}
+.f{font-family:var(--f-mono);font-size:.92em;white-space:nowrap}
+footer{margin-top:40px;color:var(--muted);font-size:.85rem;display:grid;gap:4px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+:root{ --t-build:#2b7a2b; --t-logic:#6b6f80; }
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){ --t-build:#7fd17f; --t-logic:#a9aec0; }}
+:root[data-theme="dark"]{ --t-build:#7fd17f; --t-logic:#a9aec0; }
+.tag.indep{color:var(--t-cont)} .tag.bn{color:var(--t-bayes)} .tag.build{color:var(--t-build)} .tag.logic{color:var(--t-logic)}
+.graph{background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:8px;overflow-x:auto}
+.graph svg{display:block;width:100%;max-width:520px;height:auto;margin:auto}
+.cpts{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.cpts table{min-width:0}
+.bonus{border-style:dashed}
+.section-label{font:600 .78rem var(--f-body);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding-top:8px}
+
+:root{ --t-l08:#34509e; --t-l09:#0e7d72; --t-l10a:#7a4cc2; --t-l10b:#a3456a; --t-l11:#9a6a10; }
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){ --t-l08:#8fa8f0; --t-l09:#5cc9bb; --t-l10a:#b79bf0; --t-l10b:#e58bb0; --t-l11:#e3b45a; }}
+:root[data-theme="dark"]{ --t-l08:#8fa8f0; --t-l09:#5cc9bb; --t-l10a:#b79bf0; --t-l10b:#e58bb0; --t-l11:#e3b45a; }
+.tag.l08{color:var(--t-l08)} .tag.l09{color:var(--t-l09)} .tag.l10a{color:var(--t-l10a)} .tag.l10b{color:var(--t-l10b)} .tag.l11{color:var(--t-l11)}
+.tbl table td.n,.tbl table th.n{text-align:right}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header class="top">
+    <span class="eyebrow">Machine Learning and Data Mining · Part 2 · Classification</span>
+    <h1>MLDM Classification Study Hour</h1>
+    <p class="lede">Lectures 08 to 11: classification, validation and entropy; decision trees, overfitting and pruning; model selection and reliable estimates; performance measures; Naïve Bayes, logistic regression and kNN. Running example: the NordicMart churn data. Book references are to Tan, Steinbach, Karpatne &amp; Kumar, <i>Introduction to Data Mining</i>, 2nd ed. (TSK).</p>
+    <div class="plan" aria-label="Suggested 60-minute plan">
+      <div><b>Flashcards</b><span id="plan0">0–10 min</span></div>
+      <div><b>Multiple choice</b><span id="plan1">10–25 min</span></div>
+      <div><b>Written problems</b><span id="plan2">25–60 min</span></div>
+    </div>
+  </header>
+
+  <div class="bar">
+    <div class="tabs" role="tablist">
+      <button class="tab" role="tab" id="tab-0" aria-selected="true" data-pane="0">Flashcards</button>
+      <button class="tab" role="tab" id="tab-1" aria-selected="false" data-pane="1">Multiple choice</button>
+      <button class="tab" role="tab" id="tab-2" aria-selected="false" data-pane="2">Written</button>
+      <button class="tab" role="tab" id="tab-3" aria-selected="false" data-pane="3">Weak spots</button>
+    </div>
+    <div class="timer">
+      <span class="clock" id="clock">60:00</span>
+      <button class="btn primary" id="tstart">Start hour</button>
+      <button class="btn" id="treset" title="Reset timer">Reset</button>
+    </div>
+  </div>
+
+  <section class="pane" id="pane-0" role="tabpanel" aria-labelledby="tab-0">
+    <div class="pane-head">
+      <h2>Flashcards</h2>
+      <p class="note">About 15 seconds per card: say the answer, flip, mark, move on. Click the card or press Space to flip, ← → to move. Use the topic filter to drill one lecture.</p>
+    </div>
+    <div class="deck">
+      <div class="fmeta">
+        <span id="fcount" class="counter">1 / 1</span>
+        <span class="pile">
+          <label class="note" for="ftopic" style="align-self:center">Topic</label>
+          <select id="ftopic" class="btn"></select>
+          <button class="btn" id="fshuffle">Shuffle</button>
+          <button class="btn" id="fmode" aria-pressed="false">Review pile only</button>
+        </span>
+      </div>
+      <div class="progress" aria-hidden="true"><i id="fbar"></i></div>
+      <button class="fcard" id="fcard" aria-live="polite"></button>
+      <div class="fcontrols">
+        <button class="btn" id="fprev">← Prev</button>
+        <span class="grow"></span>
+        <span class="pile">
+          <button class="btn again" id="fagain">Review again</button>
+          <button class="btn ok" id="fknow">Got it</button>
+        </span>
+        <span class="grow"></span>
+        <button class="btn" id="fnext">Next →</button>
+      </div>
+      <p class="counter" id="fstats"></p>
+    </div>
+  </section>
+
+  <section class="pane" id="pane-1" role="tabpanel" aria-labelledby="tab-1" hidden>
+    <div class="pane-head">
+      <h2>Multiple choice</h2>
+      <p class="note">One answer each. Your first click counts; the explanation appears right after. Aim for about 45 seconds per question.</p>
+      <p class="score" id="mscore">Score 0 / 0 answered</p>
+    </div>
+    <div class="refcard">
+      <p class="eyebrow">Reference</p>
+      <p class="note"><b>NordicMart churn tree</b> on 900 test customers (108 churners, 792 stayers), threshold 0.5.</p>
+      <div class="tbl"><table class="joint"><thead>
+        <tr><th></th><th>pred churn</th><th>pred stay</th><th>total</th></tr></thead><tbody>
+        <tr><td>true churn</td><td>TP = 26</td><td>FN = 82</td><td>108</td></tr>
+        <tr><td>true stay</td><td>FP = 28</td><td>TN = 764</td><td>792</td></tr>
+      </tbody></table></div>
+      <p class="note"><b>Weather data</b>: 14 days, 9 play = yes, 5 = no; H = 0.940 bits. Outlook: sunny 2 yes / 3 no, overcast 4 / 0, rainy 3 / 2.</p>
+    </div>
+    <div id="mlist" style="display:grid;gap:14px"></div>
+    <div><button class="btn" id="mreset">Clear answers</button></div>
+  </section>
+
+  <section class="pane" id="pane-2" role="tabpanel" aria-labelledby="tab-2" hidden>
+    <div class="pane-head">
+      <h2>Written problems</h2>
+      <p class="note">Work on paper or in the boxes (drafts stay in this browser). Show the products and sums you compute, to three decimals. Open the model answer only after you commit to yours, then rate yourself.</p>
+    </div>
+
+    <article class="prob" data-id="w1">
+      <div class="ph"><h3>W1 · Loan default: growing a tree by hand</h3><span class="mins">≈ 7 min · <span class="tag l09">L08 · L09</span></span></div>
+
+      <p>Ten past loan customers. Class <b>Default</b>: 4 yes, 6 no.</p>
+      <div class="tbl"><table><thead><tr><th>#</th><th>Employed</th><th>Home</th><th>Credit</th><th>Default</th></tr></thead><tbody>
+        <tr><td>1</td><td>Y</td><td>own</td><td>good</td><td>no</td></tr><tr><td>2</td><td>Y</td><td>own</td><td>good</td><td>no</td></tr>
+        <tr><td>3</td><td>Y</td><td>rent</td><td>good</td><td>no</td></tr><tr><td>4</td><td>N</td><td>own</td><td>good</td><td>no</td></tr>
+        <tr><td>5</td><td>N</td><td>rent</td><td>good</td><td>no</td></tr><tr><td>6</td><td>Y</td><td>rent</td><td>poor</td><td>yes</td></tr>
+        <tr><td>7</td><td>N</td><td>rent</td><td>poor</td><td>yes</td></tr><tr><td>8</td><td>N</td><td>rent</td><td>poor</td><td>yes</td></tr>
+        <tr><td>9</td><td>Y</td><td>own</td><td>poor</td><td>no</td></tr><tr><td>10</td><td>N</td><td>rent</td><td>poor</td><td>yes</td></tr>
+      </tbody></table></div>
+      <p class="conv">Conventions: log<sub>2</sub>, binary tests on the categorical value (“Credit = good?” etc.), three decimals, stop when a node is pure.</p>
+      <ol>
+        <li>Compute the entropy and the Gini index of the class.</li>
+        <li>Compute the information gain of Employed, Home and Credit. Which is the root?</li>
+        <li>Grow the tree below the root until every leaf is pure. Draw it and give its training error.</li>
+        <li>With only 10 records, why should you be suspicious of a tree with zero training error?</li>
+      </ol>
+      <textarea id="ta-w1" aria-label="Your answer to W1"></textarea>
+      <details class="ans"><summary>Show model answer</summary><div class="body">
+
+        <p><b>1.</b> H(4, 6) = −0.4·log<sub>2</sub>0.4 − 0.6·log<sub>2</sub>0.6 = 0.529 + 0.442 = <b>0.971</b>. Gini = 1 − 0.16 − 0.36 = <b>0.48</b>.</p>
+        <div class="tbl"><table><thead><tr><th>Attribute</th><th>Children (yes/no)</th><th>Weighted H</th><th>IG</th><th>Gini gain</th></tr></thead><tbody>
+          <tr><td>Credit</td><td>good 0/5 · poor 4/1</td><td>0.5·0 + 0.5·0.722 = 0.361</td><td><b>0.610</b></td><td>0.320</td></tr>
+          <tr><td>Home</td><td>own 0/4 · rent 4/2</td><td>0.4·0 + 0.6·0.918 = 0.551</td><td>0.420</td><td>0.213</td></tr>
+          <tr><td>Employed</td><td>N 3/2 · Y 1/4</td><td>0.5·0.971 + 0.5·0.722 = 0.846</td><td>0.125</td><td>0.080</td></tr>
+        </tbody></table></div>
+        <p><b>2.</b> Credit has the largest IG (0.610), so it is the root. Gini picks the same attribute.</p>
+        <p><b>3.</b> Credit = good → pure “no” (5 records). Credit = poor holds 4 yes / 1 no (H = 0.722). Inside it: Home gives own 0/1 and rent 4/0, both pure, IG = 0.722; Employed gives N 3/0 and Y 1/1, IG = 0.322. So split on Home. Tree: <b>Credit good → no; Credit poor → (Home own → no; Home rent → yes)</b>. Training error <b>0/10</b>.</p>
+        <p><b>4.</b> The last leaf is fed by a single record (#9). A perfect fit on 10 records may be memorizing noise; <code>min_samples_leaf</code> or pruning, chosen by CV on the training set, would guard against it.</p>
+      </div></details>
+      <div class="selfrate" data-for="w1">How did it go? <button class="btn" data-r="solid">Solid</button><button class="btn" data-r="shaky">Shaky</button><button class="btn" data-r="missed">Missed it</button></div>
+    </article>
+
+    <article class="prob" data-id="w2">
+      <div class="ph"><h3>W2 · Best threshold on a numeric attribute</h3><span class="mins">≈ 5 min · <span class="tag l08">L08</span></span></div>
+
+      <p>Eight customers, attribute Income (k€), class Buys (B) or Not (N), sorted by income:</p>
+      <div class="tbl"><table><thead><tr><th>Income</th><th>20</th><th>25</th><th>30</th><th>35</th><th>40</th><th>50</th><th>60</th><th>70</th></tr></thead><tbody>
+        <tr><td>Class</td><td>B</td><td>B</td><td>N</td><td>B</td><td>N</td><td>N</td><td>N</td><td>N</td></tr></tbody></table></div>
+      <ol>
+        <li>Compute the class entropy.</li>
+        <li>Test only the thresholds that lie between neighbours of different class. List them and compute the weighted entropy and IG of each.</li>
+        <li>Which threshold does the tree choose? Give the stump’s labels and its training error.</li>
+      </ol>
+      <textarea id="ta-w2" aria-label="Your answer to W2"></textarea>
+      <details class="ans"><summary>Show model answer</summary><div class="body">
+
+        <p><b>1.</b> 3 B, 5 N: H = 0.375·1.415 + 0.625·0.678 = <b>0.954</b>.</p>
+        <p><b>2.</b> The class changes between 25–30, 30–35 and 35–40, so the candidates are 27.5, 32.5 and 37.5.</p>
+        <div class="tbl"><table><thead><tr><th>t</th><th>Left (B/N)</th><th>Right (B/N)</th><th>Weighted H</th><th>IG</th></tr></thead><tbody>
+          <tr><td>27.5</td><td>2/0</td><td>1/5</td><td>0.25·0 + 0.75·0.650 = 0.488</td><td>0.467</td></tr>
+          <tr><td>32.5</td><td>2/1</td><td>1/4</td><td>0.375·0.918 + 0.625·0.722 = 0.796</td><td>0.159</td></tr>
+          <tr><td>37.5</td><td>3/1</td><td>0/4</td><td>0.5·0.811 + 0.5·0 = 0.406</td><td><b>0.549</b></td></tr>
+        </tbody></table></div>
+        <p><b>3.</b> t = <b>37.5</b> (IG 0.549). Income &lt; 37.5 → B, income ≥ 37.5 → N. One error (the N at income 30): training error <b>1/8</b>. A threshold between two neighbours of the same class cannot beat the best boundary threshold, which is why only these three are tried (Fayyad and Irani).</p>
+      </div></details>
+      <div class="selfrate" data-for="w2">How did it go? <button class="btn" data-r="solid">Solid</button><button class="btn" data-r="shaky">Shaky</button><button class="btn" data-r="missed">Missed it</button></div>
+    </article>
+
+    <article class="prob" data-id="w3">
+      <div class="ph"><h3>W3 · Fraud detector: measures, chance and cost</h3><span class="mins">≈ 7 min · <span class="tag l10b">L10b</span></span></div>
+
+      <p>A fraud detector on 1000 test transactions (50 frauds):</p>
+      <div class="tbl"><table><thead><tr><th></th><th>pred fraud</th><th>pred ok</th><th>total</th></tr></thead><tbody>
+        <tr><td>true fraud</td><td>TP = 30</td><td>FN = 20</td><td>50</td></tr>
+        <tr><td>true ok</td><td>FP = 40</td><td>TN = 910</td><td>950</td></tr></tbody></table></div>
+      <p class="conv">Costs: a missed fraud costs €200, a false alarm costs €5, a correct decision costs nothing.</p>
+      <ol>
+        <li>Compute accuracy, the baseline accuracy, precision, recall, specificity and F1. Is the accuracy impressive?</li>
+        <li>Compute Cohen’s κ (show the number of records correct by chance) and the MCC.</li>
+        <li>Compute the total cost of the detector, of “flag nobody” and of “flag everybody”. What do you conclude?</li>
+      </ol>
+      <textarea id="ta-w3" aria-label="Your answer to W3"></textarea>
+      <details class="ans"><summary>Show model answer</summary><div class="body">
+
+        <p><b>1.</b> Accuracy = 940/1000 = <b>0.94</b>; baseline (“no fraud”) = 950/1000 = <b>0.95</b>, so the accuracy is <i>below</i> the baseline. Precision = 30/70 = <b>0.429</b>; recall = 30/50 = <b>0.600</b>; specificity = 910/950 = <b>0.958</b>; F1 = 2·0.429·0.6/(1.029) = <b>0.500</b> (the arithmetic mean would say 0.514).</p>
+        <p><b>2.</b> Random classifier with the same predicted proportions (70 : 930): correct by chance = 50·70/1000 + 950·930/1000 = 3.5 + 883.5 = <b>887</b>. κ = (940 − 887)/(1000 − 887) = 53/113 = <b>0.469</b>. MCC = (30·910 − 40·20)/√(70·50·950·930) = 26500/√3.092×10<sup>9</sup> ≈ <b>0.477</b>.</p>
+        <p><b>3.</b> Detector: 20·200 + 40·5 = <b>€4,200</b>. Nobody: 50·200 = <b>€10,000</b>. Everybody: 950·5 = <b>€4,750</b>. The detector is cheaper than both trivial strategies although its accuracy is below the baseline: accuracy is the wrong judge when classes are imbalanced and errors have different costs.</p>
+      </div></details>
+      <div class="selfrate" data-for="w3">How did it go? <button class="btn" data-r="solid">Solid</button><button class="btn" data-r="shaky">Shaky</button><button class="btn" data-r="missed">Missed it</button></div>
+    </article>
+
+    <article class="prob" data-id="w4">
+      <div class="ph"><h3>W4 · ROC curve and AUC by hand</h3><span class="mins">≈ 7 min · <span class="tag l10b">L10b</span></span></div>
+
+      <p>Ten test records scored by a probabilistic classifier (4 positives, 6 negatives):</p>
+      <div class="tbl"><table><thead><tr><th>Score</th><th>0.92</th><th>0.85</th><th>0.78</th><th>0.70</th><th>0.70</th><th>0.55</th><th>0.48</th><th>0.40</th><th>0.30</th><th>0.15</th></tr></thead><tbody>
+        <tr><td>True class</td><td>+</td><td>+</td><td>−</td><td>+</td><td>−</td><td>−</td><td>+</td><td>−</td><td>−</td><td>−</td></tr></tbody></table></div>
+      <p class="conv">Predict positive when score ≥ threshold. Cost: a missed positive costs 10, a false alarm costs 1.</p>
+      <ol>
+        <li>Build the table of (FP rate, TP rate) for every distinct threshold, starting at (0, 0).</li>
+        <li>Compute the AUC two ways: by pair counting (ties count ½) and by the trapezoid rule.</li>
+        <li>Which threshold minimizes the total cost, and what is that cost?</li>
+      </ol>
+      <textarea id="ta-w4" aria-label="Your answer to W4"></textarea>
+      <details class="ans"><summary>Show model answer</summary><div class="body">
+
+        <div class="tbl"><table><thead><tr><th>Threshold ≥</th><th>TP</th><th>FP</th><th>TP rate</th><th>FP rate</th><th>Cost (10·FN + FP)</th></tr></thead><tbody>
+          <tr><td>(none)</td><td>0</td><td>0</td><td>0</td><td>0</td><td>40</td></tr>
+          <tr><td>0.92</td><td>1</td><td>0</td><td>0.25</td><td>0</td><td>30</td></tr>
+          <tr><td>0.85</td><td>2</td><td>0</td><td>0.50</td><td>0</td><td>20</td></tr>
+          <tr><td>0.78</td><td>2</td><td>1</td><td>0.50</td><td>0.167</td><td>21</td></tr>
+          <tr><td>0.70 (tie: one + and one −)</td><td>3</td><td>2</td><td>0.75</td><td>0.333</td><td>12</td></tr>
+          <tr><td>0.55</td><td>3</td><td>3</td><td>0.75</td><td>0.500</td><td>13</td></tr>
+          <tr><td>0.48</td><td>4</td><td>3</td><td>1.00</td><td>0.500</td><td><b>3</b></td></tr>
+          <tr><td>0.40</td><td>4</td><td>4</td><td>1.00</td><td>0.667</td><td>4</td></tr>
+          <tr><td>0.30</td><td>4</td><td>5</td><td>1.00</td><td>0.833</td><td>5</td></tr>
+          <tr><td>0.15</td><td>4</td><td>6</td><td>1.00</td><td>1.000</td><td>6</td></tr>
+        </tbody></table></div>
+        <p><b>1.</b> The tie at 0.70 makes the curve move diagonally from (0.167, 0.50) to (0.333, 0.75). <b>2.</b> Pair counting over 4 × 6 = 24 pairs: positive 0.92 beats 6 negatives, 0.85 beats 6, 0.70 beats 4 and ties 1 (4.5), 0.48 beats 3: 19.5/24 = <b>0.8125</b>. Trapezoid: the same value, 0.8125. <b>3.</b> Threshold <b>0.48</b>: no missed positive, 3 false alarms, cost <b>3</b>. With FN ten times as costly as FP the best point sits where recall reaches 1.</p>
+      </div></details>
+      <div class="selfrate" data-for="w4">How did it go? <button class="btn" data-r="solid">Solid</button><button class="btn" data-r="shaky">Shaky</button><button class="btn" data-r="missed">Missed it</button></div>
+    </article>
+
+    <article class="prob" data-id="w5">
+      <div class="ph"><h3>W5 · How sure are we? Intervals, CV and grid cost</h3><span class="mins">≈ 6 min · <span class="tag l10a">L10a</span></span></div>
+
+      <ol>
+        <li>A tree makes 18 errors on 120 test records. Give the 95% interval for the true error with f ± z√(f(1−f)/N). Repeat with 72 errors on 480 records (same f). What changed?</li>
+        <li>5-fold CV accuracy (mean ± std) for max_depth 1 to 6 is: 84.0 ± 1.5 · 87.9 ± 1.0 · 89.0 ± 0.9 · 89.4 ± 0.8 · 88.8 ± 1.1 · 86.5 ± 1.6. Which depth does the 1-std rule choose?</li>
+        <li>You search max_depth {3, 5, 8} × min_samples_leaf {1, 5} × criterion {gini, entropy} with 5-fold CV and refit the best model. How many trainings?</li>
+        <li>Why not pick the depth by the accuracy on the test set?</li>
+      </ol>
+      <textarea id="ta-w5" aria-label="Your answer to W5"></textarea>
+      <details class="ans"><summary>Show model answer</summary><div class="body">
+
+        <p><b>1.</b> f = 0.15, z = 1.96. N = 120: half-width = 1.96·√(0.15·0.85/120) = 0.064, interval <b>[8.6%, 21.4%]</b> (Wilson: [9.7%, 22.5%]). N = 480: half-width = 0.032, interval <b>[11.8%, 18.2%]</b>. Four times the data halves the width (1/√N).</p>
+        <p><b>2.</b> Best is depth 4 (89.4, std 0.8), so the threshold is 89.4 − 0.8 = 88.6. Depths within it: 3 (89.0), 4, 5 (88.8). Depth 2 (87.9) is out. The simplest is <b>depth 3</b>.</p>
+        <p><b>3.</b> 3 × 2 × 2 = 12 configurations; 12 × 5 + 1 = <b>61 trainings</b>.</p>
+        <p><b>4.</b> Choosing by the test score makes it optimistic (the winner’s curse), so it is no longer an honest estimate of run-time error. Choose with CV on the training part; use the test set once at the end.</p>
+      </div></details>
+      <div class="selfrate" data-for="w5">How did it go? <button class="btn" data-r="solid">Solid</button><button class="btn" data-r="shaky">Shaky</button><button class="btn" data-r="missed">Missed it</button></div>
+    </article>
+
+    <article class="prob" data-id="w6">
+      <div class="ph"><h3>W6 · Naive Bayes with Laplace smoothing</h3><span class="mins">≈ 6 min · <span class="tag l11">L11</span></span></div>
+
+      <p>Ten emails. Features: <b>Link</b> (does it contain a link?) and <b>Known</b> (known sender?). Class Spam or Ham.</p>
+      <div class="tbl"><table><thead><tr><th>Class</th><th>(Link, Known) of the 5 emails</th></tr></thead><tbody>
+        <tr><td>Spam</td><td>(yes, no) · (yes, no) · (yes, no) · (no, no) · (yes, no)</td></tr>
+        <tr><td>Ham</td><td>(no, yes) · (yes, yes) · (no, yes) · (no, no) · (yes, yes)</td></tr></tbody></table></div>
+      <ol>
+        <li>Classify a new email (Link = yes, Known = yes) with plain frequencies. What goes wrong?</li>
+        <li>Repeat with Laplace smoothing, α = 1 (each feature has V = 2 values).</li>
+        <li>Classify (Link = yes, Known = no) with α = 1.</li>
+      </ol>
+      <textarea id="ta-w6" aria-label="Your answer to W6"></textarea>
+      <details class="ans"><summary>Show model answer</summary><div class="body">
+
+        <p>Priors: Pr(spam) = Pr(ham) = 0.5.</p>
+        <p><b>1.</b> Spam: Pr(link=yes | spam) = 4/5, Pr(known=yes | spam) = 0/5, so the likelihood is 0.5·0.8·0 = <b>0</b>. Ham: 0.5·(2/5)·(4/5) = 0.16. Posterior Pr(ham) = <b>100%</b>: a single zero count vetoed everything (the zero-frequency problem).</p>
+        <p><b>2.</b> Spam: Pr(link=yes) = (4+1)/(5+2) = 5/7, Pr(known=yes) = (0+1)/7 = 1/7; 0.5·5/7·1/7 = 0.0510. Ham: Pr(link=yes) = 3/7, Pr(known=yes) = 5/7; 0.5·3/7·5/7 = 0.1531. Normalize: Pr(spam) = 0.0510/0.2041 = <b>0.25</b>, Pr(ham) = <b>0.75</b>.</p>
+        <p><b>3.</b> Spam: 0.5·5/7·(5+1)/7 = 0.3061 (Pr(known=no | spam) = 6/7). Ham: 0.5·3/7·(1+1)/7 = 0.0612. Pr(spam) = 0.3061/0.3673 = <b>0.833</b>.</p>
+      </div></details>
+      <div class="selfrate" data-for="w6">How did it go? <button class="btn" data-r="solid">Solid</button><button class="btn" data-r="shaky">Shaky</button><button class="btn" data-r="missed">Missed it</button></div>
+    </article>
+
+    <article class="prob bonus" data-id="w7">
+      <div class="ph"><h3>W7 · Bonus: logistic regression and kNN by hand</h3><span class="mins">≈ 5 min · <span class="tag l11">L11</span> · optional</span></div>
+
+      <p><b>(a)</b> A logistic regression on standardized attributes has w<sub>0</sub> = −1.2, weight +0.85 on days since last buy and −0.48 on web sessions. A customer has z-scores (+1.5, −0.5). Compute z, the churn probability and the odds. With threshold 0.15, is the customer flagged? By what factor do the odds change per +1 std of days since last buy?</p>
+      <p><b>(b)</b> 1-nearest-neighbour on (spend €, tickets). Training: A (480, 5) churn · B (520, 6) churn · C (560, 2) stay · D (430, 1) stay · E (600, 4) churn · F (300, 3) stay. New customer (500, 3). Find the neighbour with raw distances, then with standardized attributes (mean/std of the six training points, population std).</p>
+      <textarea id="ta-w7" aria-label="Your answer to W7"></textarea>
+      <details class="ans"><summary>Show model answer</summary><div class="body">
+
+        <p><b>(a)</b> z = −1.2 + 0.85·1.5 − 0.48·(−0.5) = <b>0.315</b>. Probability = 1/(1 + e<sup>−0.315</sup>) = <b>0.578</b>; odds = e<sup>0.315</sup> = 1.37 (0.578/0.422). 0.578 &gt; 0.15, so the customer is flagged. The odds are multiplied by e<sup>0.85</sup> ≈ <b>2.34</b> per standard deviation.</p>
+        <p><b>(b)</b> Raw distances: A 20.1, B 20.2, C 60.0, D 70.0, E 100.0, F 200.0 → nearest is <b>A (churn)</b>: the euro column decides everything. Standardized (spend mean 481.7, std 97.7; tickets mean 3.5, std 1.71): A 1.189, B 1.769, <b>C 0.848</b>, D 1.373, E 1.179, F 2.047 → nearest is <b>C (stay)</b>. Scaling changed the prediction.</p>
+      </div></details>
+      <div class="selfrate" data-for="w7">How did it go? <button class="btn" data-r="solid">Solid</button><button class="btn" data-r="shaky">Shaky</button><button class="btn" data-r="missed">Missed it</button></div>
+    </article>
+
+  </section>
+
+  <section class="pane" id="pane-3" role="tabpanel" aria-labelledby="tab-3" hidden>
+    <div class="pane-head">
+      <h2>Weak spots</h2>
+      <p class="note">Five ideas that are easy to get wrong on first reading. Outside the timed hour: use it before the exam. Read the fix, then answer the check in the box and open the answer.</p>
+    </div>
+
+    <article class="prob weak" data-id="wk1">
+      <div class="ph"><h3>1 · After cross-validation, what is the final model?</h3><span class="mins"><span class="tag l10a">L10a</span></span></div>
+      <p><b>The confusion.</b> k-fold CV trains k models, so “which one do I keep?”. Answer: <b>none of them</b>. CV is a <i>measurement</i>, not a model factory.</p>
+      <p><b>The fix.</b> (1) For each configuration, run k-fold CV on the training part and record the mean score. (2) Pick the best configuration (or the simplest within 1 std). (3) <b>Retrain that one configuration once on all the training data</b>. That is the deliverable. (4) Score it once on the test set. The k fold models are thrown away. Count: c configurations × k folds + 1 final training.</p>
+      <p><b>Check.</b> 3 values of max_depth × 2 criteria, 4-fold CV, then the final fit. How many trainings, and which model do you hand over?</p>
+      <textarea id="ta-wk1" aria-label="Your answer to weak spot 1"></textarea>
+      <details class="ans"><summary>Show answer</summary><div class="body"><p>6 configurations × 4 folds = 24, plus 1 final = <b>25</b> trainings. You hand over the last one: the best configuration, retrained on all training data, whose test score you measure once.</p></div></details>
+      <div class="selfrate" data-for="wk1">How did it go? <button class="btn" data-r="solid">Solid</button><button class="btn" data-r="shaky">Shaky</button><button class="btn" data-r="missed">Missed it</button></div>
+    </article>
+
+    <article class="prob weak" data-id="wk2">
+      <div class="ph"><h3>2 · Target leakage: “days since last buy” at the root</h3><span class="mins"><span class="tag l09">L09</span></span></div>
+      <p><b>The setup.</b> Pick a snapshot date, say 1 Jan. The <b>label</b> is “no purchase in the 90 days after 1 Jan”. The <b>features</b> must describe what you knew <i>on 1 Jan</i>, because that is the moment you will use the model.</p>
+      <p><b>The leak.</b> If “days since last buy” is computed with today’s data (after the 90 days), a customer who did not buy in Jan–Mar automatically has a large value. The feature contains the label, so the tree finds a huge IG and a one-split stump. Computed as of 1 Jan (“40 days since the last purchase before 1 Jan”) it is a legitimate feature.</p>
+      <p><b>The test.</b> At the exact moment I will use the model, can I compute this value? If not, it leaks.</p>
+      <p><b>Check.</b> Snapshot 1 Jan, label = churn in Jan–Mar. Which features leak? (a) days since last purchase as of 1 Jan · (b) days since last purchase measured on 31 Mar · (c) number of purchases in Jan–Mar · (d) tenure in years at 1 Jan · (e) average basket over the whole year.</p>
+      <textarea id="ta-wk2" aria-label="Your answer to weak spot 2"></textarea>
+      <details class="ans"><summary>Show answer</summary><div class="body"><p><b>Leak:</b> (b), (c) and (e): all use information after 1 Jan, and “no purchases in Jan–Mar” is the label itself in (c). <b>Fine:</b> (a) and (d), computable on 1 Jan.</p></div></details>
+      <div class="selfrate" data-for="wk2">How did it go? <button class="btn" data-r="solid">Solid</button><button class="btn" data-r="shaky">Shaky</button><button class="btn" data-r="missed">Missed it</button></div>
+    </article>
+
+    <article class="prob weak" data-id="wk3">
+      <div class="ph"><h3>3 · κ and MCC: improvement over guessing</h3><span class="mins"><span class="tag l10b">L10b</span></span></div>
+      <p><b>The problem.</b> “Nobody churns” has 88% accuracy when 12% churn. Accuracy ignores how easy the task is.</p>
+      <p><b>κ.</b> κ = (correct − correct by chance) / (perfect − correct by chance). “Correct by chance” = what a random classifier with the same predicted proportions gets: for each class, (true count × predicted count) / N, summed. NordicMart: churners 108 × 54 / 900 = 6.5, stayers 792 × 846 / 900 = 744.5, total 751. The tree gets 790, so κ = 39/149 = <b>0.26</b>. “Nobody churns” gets exactly the chance level, so κ = 0.</p>
+      <p><b>MCC</b> = (TP·TN − FP·FN) / √((TP+FP)(TP+FN)(TN+FP)(TN+FN)): the correlation between prediction and truth, from −1 to 1, 0 at chance. NordicMart: 17,568 / 62,511 = <b>0.28</b>.</p>
+      <p><b>Check.</b> 1000 records, 50 positives. TP 20, FN 30, FP 20, TN 930. Accuracy is 0.95, the same as “always negative”. Compute κ and MCC.</p>
+      <textarea id="ta-wk3" aria-label="Your answer to weak spot 3"></textarea>
+      <details class="ans"><summary>Show answer</summary><div class="body"><p>True positives 50, predicted positives 40. Chance: 50·40/1000 = 2 and 950·960/1000 = 912, total 914. Correct = 950. κ = (950 − 914)/(1000 − 914) = 36/86 = <b>0.419</b>.</p>
+        <p>MCC = (20·930 − 20·30) / √(40·50·960·950) = 18,000 / 42,708 = <b>0.421</b>. Same accuracy as the baseline, but real signal; the baseline would have κ = MCC = 0.</p></div></details>
+      <div class="selfrate" data-for="wk3">How did it go? <button class="btn" data-r="solid">Solid</button><button class="btn" data-r="shaky">Shaky</button><button class="btn" data-r="missed">Missed it</button></div>
+    </article>
+
+    <article class="prob weak" data-id="wk4">
+      <div class="ph"><h3>4 · Cumulative gains and lift</h3><span class="mins"><span class="tag l10b">L10b</span></span></div>
+      <p><b>What you sort.</b> The test customers (we know who really churned), from the highest model score to the lowest. Positive = really churned. Then ask: if I contact only the top x%, what do I catch?</p>
+      <p><b>Gains</b> = % of all churners found in the top x% (random contact: the diagonal, x% for x%). <b>Lift</b> = gains / x = “how many times better than random”. Lift is highest at the top and falls to 1 at 100%. Only the order matters, not the score values.</p>
+      <p><b>Check.</b> 8 customers sorted by score, P = churner: <b>P P N P N N N N</b> (3 P, 5 N). Gains and lift at the top 25% and at the top 50%?</p>
+      <textarea id="ta-wk4" aria-label="Your answer to weak spot 4"></textarea>
+      <details class="ans"><summary>Show answer</summary><div class="body"><p>Top 25% = 2 customers (P P): 2 of 3 churners = <b>67%</b>, lift 0.67/0.25 = <b>2.67</b>. Top 50% = 4 customers (P P N P): 3 of 3 = <b>100%</b>, lift 1.00/0.50 = <b>2.0</b>.</p></div></details>
+      <div class="selfrate" data-for="wk4">How did it go? <button class="btn" data-r="solid">Solid</button><button class="btn" data-r="shaky">Shaky</button><button class="btn" data-r="missed">Missed it</button></div>
+    </article>
+
+    <article class="prob weak" data-id="wk5">
+      <div class="ph"><h3>5 · Drawing a ROC curve, and what you read from it</h3><span class="mins"><span class="tag l10b">L10b</span></span></div>
+      <p><b>Axes.</b> x = false positive rate = FP / (number of negatives), the share of stayers flagged by mistake. y = true positive rate = TP / (number of positives) = recall. One threshold = one point; lowering the threshold walks down the sorted list.</p>
+      <p><b>Drawing.</b> Sort by score, highest first. Start at (0, 0). Next customer is a churner: step <b>up</b> by 1/#positives. A stayer: step <b>right</b> by 1/#negatives. End at (1, 1). Ties: one diagonal step.</p>
+      <p><b>Reading it.</b> Up first means churners are ranked on top: a curve that hugs the top-left corner is good, the diagonal is random guessing. AUC = area under the path = the probability that a random churner is scored above a random stayer.</p>
+      <p><b>Check.</b> 8 test customers sorted by score, P = churner: <b>P P N P N P N N</b> (4 P, 4 N). (a) List the points of the path. (b) Compute the AUC. (c) Which point do you get by flagging the top 4?</p>
+      <textarea id="ta-wk5" aria-label="Your answer to weak spot 5"></textarea>
+      <details class="ans"><summary>Show answer</summary><div class="body">
+        <p><b>(a)</b> Steps are 1/4 up and 1/4 right: (0,0) → (0,.25) → (0,.5) → (.25,.5) → (.25,.75) → (.5,.75) → (.5,1) → (.75,1) → (1,1).</p>
+        <p><b>(b)</b> For each stayer, the TP rate when its step right happens: 0.5, 0.75, 1, 1. AUC = (0.5 + 0.75 + 1 + 1) / 4 = <b>0.8125</b>. Check by pairs: 13 of the 16 (churner, stayer) pairs have the churner ranked higher: 13/16 = 0.8125.</p>
+        <p><b>(c)</b> Top 4 = P P N P: TP = 3, FP = 1, so TP rate 0.75 and FP rate 0.25: the point (0.25, 0.75).</p></div></details>
+      <div class="selfrate" data-for="wk5">How did it go? <button class="btn" data-r="solid">Solid</button><button class="btn" data-r="shaky">Shaky</button><button class="btn" data-r="missed">Missed it</button></div>
+    </article>
+
+  </section>
+
+  <footer>
+    <span>Reference: Tan, Steinbach, Karpatne &amp; Kumar, <i>Introduction to Data Mining</i>, 2nd ed., ch. 3 (3.3 decision trees, 3.4 overfitting, 3.5 model selection, 3.6 model evaluation, 3.7 hyper-parameters, 3.8 pitfalls, 3.9 model comparison) and ch. 4 (4.3 nearest neighbor, 4.4 naive Bayes, 4.6 logistic regression, 4.11 class imbalance, 4.12 multiclass). Also Witten, Frank, Hall &amp; Pal, <i>Data Mining</i>, 4th ed., and Cohen (1960) for κ.</span>
+    <span>NordicMart figures are the course’s running example. Notation: TP, FP, TN, FN as in the confusion matrix; log<sub>2</sub> for entropy; ln for log loss.</span>
+  </footer>
+</div>
+
+<script>
+(function(){
+  const store = {
+    get(k, d){ try{ const v = localStorage.getItem('mldmRev:'+k); return v===null? d : JSON.parse(v);}catch(e){ return d; } },
+    set(k, v){ try{ localStorage.setItem('mldmRev:'+k, JSON.stringify(v)); }catch(e){} }
+  };
+
+  /* graphs */
+  const NS='http://www.w3.org/2000/svg';
+  function mk(tag, attrs, parent){ const e=document.createElementNS(NS,tag); for(const k in attrs) e.setAttribute(k, attrs[k]); parent.appendChild(e); return e; }
+  function drawGraph(id, nodes, edges){
+    const svg=document.getElementById(id); if(!svg) return;
+    const defs=mk('defs',{},svg);
+    const m=mk('marker',{id:id+'-arr',viewBox:'0 0 10 10',refX:'9',refY:'5',markerWidth:'8',markerHeight:'8',orient:'auto-start-reverse'},defs);
+    mk('path',{d:'M0,0 L10,5 L0,10 z',style:'fill:var(--muted)'},m);
+    const rx=54, ry=20;
+    const off=(dx,dy)=>{ const L=Math.hypot(dx,dy); const ux=dx/L, uy=dy/L; return 1/Math.sqrt((ux/rx)**2+(uy/ry)**2); };
+    edges.forEach(([a,b])=>{
+      const A=nodes[a], B=nodes[b], dx=B[0]-A[0], dy=B[1]-A[1], L=Math.hypot(dx,dy);
+      const o1=off(dx,dy), o2=off(dx,dy)+3;
+      mk('line',{x1:A[0]+dx/L*o1, y1:A[1]+dy/L*o1, x2:B[0]-dx/L*o2, y2:B[1]-dy/L*o2, style:'stroke:var(--muted);stroke-width:1.6', 'marker-end':`url(#${id}-arr)`},svg);
+    });
+    for(const n in nodes){
+      const [x,y]=nodes[n];
+      mk('ellipse',{cx:x,cy:y,rx,ry,style:'fill:var(--surface);stroke:var(--ink);stroke-width:1.5'},svg);
+      const t=mk('text',{x,y:y+5,'text-anchor':'middle',style:'fill:var(--ink);font:600 14px IBM Plex Sans, system-ui, sans-serif'},svg); t.textContent=n;
+    }
+  }
+
+  /* tabs */
+  const tabs = [...document.querySelectorAll('.tab')];
+  function showPane(i){
+    tabs.forEach(t => t.setAttribute('aria-selected', String(t.dataset.pane == i)));
+    for(let k=0;k<4;k++) document.getElementById('pane-'+k).hidden = (k != i);
+    store.set('pane', i);
+  }
+  tabs.forEach(t => t.addEventListener('click', () => { showPane(+t.dataset.pane); const bar=document.querySelector('.bar'); if(bar.getBoundingClientRect().top <= 1) window.scrollTo({top: bar.offsetTop, behavior:'auto'}); }));
+  const h = (location.hash||'').slice(1);
+  showPane(h==='mcq'?1:h==='written'?2:h==='weak'?3:h==='cards'?0:store.get('pane',0));
+
+  /* timer */
+  const TOTAL = 3600;
+  let left = store.get('tleft', TOTAL), running = false, iv = null;
+  const clock = document.getElementById('clock'), tstart = document.getElementById('tstart');
+  const segs = [...document.querySelectorAll('.plan div')];
+  function fmt(s){ const m = Math.floor(s/60), r = s%60; return String(m).padStart(2,'0')+':'+String(r).padStart(2,'0'); }
+  function paint(){ clock.textContent = fmt(left); const el = (TOTAL-left)/60, seg = el < 10 ? 0 : el < 25 ? 1 : 2; segs.forEach((s,i)=>s.classList.toggle('now', (running || left<TOTAL) && i===seg)); }
+  function stop(){ running=false; clearInterval(iv); tstart.textContent = left<TOTAL? 'Resume':'Start hour'; paint(); }
+  function tick(){ if(left<=0){ stop(); clock.textContent='done'; return; } const before=(TOTAL-left)/60; left--; store.set('tleft', left); const after=(TOTAL-left)/60; if(before<10&&after>=10) showPane(1); if(before<25&&after>=25) showPane(2); paint(); }
+  tstart.addEventListener('click', ()=>{ if(running){ stop(); return; } running = true; tstart.textContent='Pause'; iv = setInterval(tick, 1000); paint(); });
+  document.getElementById('treset').addEventListener('click', ()=>{ stop(); left=TOTAL; store.set('tleft',left); tstart.textContent='Start hour'; paint(); });
+  if(left<TOTAL) tstart.textContent='Resume';
+  paint();
+
+  /* flashcards */
+  const T = {"l08": ["l08", "L08 · Classification & entropy"], "l09": ["l09", "L09 · Decision trees"], "l10a": ["l10a", "L10a · Model selection"], "l10b": ["l10b", "L10b · Performance measures"], "l11": ["l11", "L11 · NB, LR, kNN"]};
+  const CARDS = [["l08", "What is a classifier, formally, and what does learning mean?", "A parametrized decision function <b>M(x, θ) = y<sub>pred</sub></b>. Learning: given labelled data X, Y, find the θ that makes the prediction error as small as possible. <b>Crisp</b> = one label; <b>probabilistic</b> = one probability per class.", "TSK 3.1–3.2"], ["l08", "Training error vs generalization error. Which one do we care about?", "Training error = mistakes on the data used for learning; it is optimistic (a lookup table scores 0%). <b>Generalization error</b> = mistakes on new data: the one that matters. It is unknown, so we estimate it on a held-out test set.", "TSK 3.4"], ["l08", "Underfitting vs overfitting: symptoms.", "<b>Underfit:</b> model too simple, high training <i>and</i> test error. <b>Overfit:</b> learns the noise, low training error, much higher test error. Aim for the simplest model that captures the pattern.", "TSK 3.4"], ["l08", "What is the baseline, and why look at it first?", "Majority-class rule: always predict the most frequent class. NordicMart (12% churners): “nobody churns” is right 88% of the time. A model is interesting only if it beats the baseline.", "TSK 4.11.2"], ["l08", "Entropy: formula, maximum, weather example.", "H(X) = −Σ p<sub>j</sub> log<sub>2</sub> p<sub>j</sub>. Maximum log<sub>2</sub>V (flat distribution); binary: 1 bit at p = 0.5, 0 at p = 0 or 1. Weather data, 9 yes / 5 no: H = <b>0.940</b> bits.", "TSK 3.3.3"], ["l08", "Information gain: definition and the weather numbers.", "IG = H(class) − Σ (N<sub>i</sub>/N)·H(child<sub>i</sub>). Weather: outlook <b>0.247</b>, humidity 0.152, windy 0.048, temperature 0.029, so outlook is the root. The overcast branch (4 yes, 0 no) has H = 0: a pure leaf.", "TSK 3.3.3"], ["l08", "How does a tree test a numeric attribute?", "Binary test d &lt; t. Try thresholds t, compute the weighted entropy of the two parts, keep the t with maximum IG. Candidates: midpoints where the class changes between sorted neighbours.", "TSK 3.3.2"], ["l08", "k-fold cross-validation in one breath.", "Split into k folds; k rounds, each fold validates once while the other k−1 train. Report the <b>mean and std</b> of the k scores. Every record validates once and trains k−1 times.", "TSK 3.6.2"], ["l09", "Recursive tree-building: when do you stop, and why is it greedy?", "Leaf if all records have one class, or no test gives positive IG (label = majority class). Otherwise take the (attribute, threshold) with maximum IG, split, recurse. Greedy: best immediate gain, no guarantee of the best tree (finding it is NP-complete).", "TSK 3.3.4"], ["l09", "Iris, 50-50 split: which attribute at the root, with what IG?", "Petal length (t = 2.6) and petal width (t = 0.75) tie at IG <b>0.94</b> (class entropy 1.58). Sepal length 0.61, sepal width 0.41. The root isolates setosa.", "TSK 3.3"], ["l09", "Iris with 2 altered labels: train vs test error, full vs pruned tree.", "Full tree: train 1/75 = 1.33%, test 12/75 = 16%. Pruned (depth 2): train 4%, test 8%. Higher training error, lower test error: that is what pruning buys.", "TSK 3.4"], ["l09", "Formal definition of overfitting, and its two causes.", "h overfits if some h′ has error<sub>train</sub>(h) &lt; error<sub>train</sub>(h′) <i>and</i> error<sub>X</sub>(h) &gt; error<sub>X</sub>(h′). Causes: <b>noise</b> in values or labels, and <b>non-representative</b> training instances.", "TSK 3.4.1"], ["l09", "Decision-tree hyperparameters you must know.", "<code>max_depth</code>, <code>min_samples_leaf</code>, <code>min_samples_split</code> (the meaning of “X is small”), <code>max_leaf_nodes</code>, <code>ccp_alpha</code> (post-pruning), <code>criterion</code>. Chosen by us, not learned.", "TSK 3.7"], ["l09", "Gini index: formula, max, min, weather example.", "Gini = 1 − Σ f<sub>j</sub><sup>2</sup>. Max 1 − 1/C (uniform), min 0 (pure); sklearn default. Weather root: 1 − (9/14)<sup>2</sup> − (5/14)<sup>2</sup> = <b>0.459</b>; after outlook 0.343; reduction 0.116.", "TSK 3.3.3"], ["l09", "Data leakage: the two routes and the symptom.", "(1) Preparation computed on all data (fill-in means, scaling): split first, learn on training only. (2) Features from the future (days since last buy measured today). Symptom: too-good results, one attribute with enormous IG, a tree that is a single stump.", "TSK 3.8"], ["l09", "Cost of building a tree and of using it.", "Build <i>O</i>(D·N·log N); classify one record <i>O</i>(h), h = tree height. Non-parametric; robust to redundant attributes; robust to noise if pruned. Impurity measure matters little, pruning strategy matters a lot.", "TSK 3.3.6"], ["l10a", "Parameter vs hyperparameter vs model selection.", "Parameters are learned from data (tests and thresholds of the nodes). Hyperparameters are chosen by us (<code>max_depth</code>). Model selection = choosing the algorithm and its hyperparameters.", "TSK 3.7"], ["l10a", "The winner’s curse.", "20 coin-flip “models”, 50 test records, keep the best test accuracy: about <b>63%</b>, while every model is truly 50%. Selecting on the test score makes that score optimistic.", "TSK 3.8.2"], ["l10a", "Train / validation / test: the three steps.", "1. For each configuration, learn on training, score on validation. 2. Retrain the best configuration on training + validation. 3. Score <b>once</b> on test. Cost c + 1 trainings; the choice rests on one smaller validation set.", "TSK 3.5.1"], ["l10a", "Cross-validated model selection: how many trainings?", "c configurations × k folds + 1 final training = c·k + 1. Example: 5 × 3 × 2 = 30 configurations, k = 5 → 150 + 1. CV is run on the training part only; the test set is touched once at the end.", "TSK 3.6.2 · 3.7"], ["l10a", "The 1-std rule.", "Among the configurations whose CV mean is within one std of the best, take the simplest. A conservative heuristic, not a statistical test.", "TSK 3.5.4"], ["l10a", "CV variants.", "Stratified (class proportions kept; sklearn default for classification) · repeated k-fold · leave-one-out (k = N, expensive, no randomness) · group k-fold (all rows of one customer in the same fold).", "TSK 3.6.2"], ["l10a", "Leakage inside cross-validation.", "Preparation (fill-in, scaling) must be recomputed inside each round on its training folds. In sklearn: put it in a <code>Pipeline</code> and pass the pipeline to the CV routine.", "TSK 3.8.1"], ["l10a", "Confidence interval of a test error.", "Test records are Bernoulli trials: f = E/N, sd ≈ √(p(1−p)/N) for N ≥ 30. z: 90% → 1.64, 95% → 1.96, 99% → 2.58. Rough interval f ± z√(f(1−f)/N). Width ∝ 1/√N: 4× the data halves it.", "TSK 3.9"], ["l10a", "C4.5 statistical pruning rule.", "Bottom-up on the full tree: compare e<sub>l</sub> (weighted pessimistic error of a subtree’s leaves) with e<sub>r</sub> (pessimistic error if its root became a leaf). <b>Prune if e<sub>r</sub> ≤ e<sub>l</sub></b>. Uses training data only.", "TSK 3.5.3"], ["l10b", "Binary measures from the confusion matrix.", "Precision TP/(TP+FP) · recall (sensitivity) TP/(TP+FN) · specificity TN/(TN+FP) · accuracy (TP+TN)/N. NordicMart tree: 26/54 = 48.1%, 26/108 = 24.1%, 764/792 = 96.5%, 87.8%.", "TSK 4.11.2"], ["l10b", "F1: formula and why harmonic.", "F1 = 2PR/(P+R). High only if both are high. NordicMart: 2·0.481·0.241/(0.481+0.241) = <b>0.32</b>; the arithmetic mean would say 0.36.", "TSK 4.11.2"], ["l10b", "Macro, weighted, micro: what each answers.", "<b>micro</b>: how good is each decision (= accuracy). <b>weighted</b>: each class by its size. <b>macro</b>: each class equally; the only one that exposes a neglected rare class. Weighted recall = micro = accuracy.", "TSK 4.12"], ["l10b", "Cohen’s κ: idea, formula, range.", "κ = (Pr(o) − Pr(e)) / (1 − Pr(e)) = (correct − chance)/(N − chance); chance = a random classifier with the same predicted proportions. 1 perfect, 0 chance level, &lt; 0 worse. NordicMart tree 0.26, baseline 0.", "Cohen (1960)"], ["l10b", "MCC.", "(TP·TN − FP·FN) / √((TP+FP)(TP+FN)(TN+FP)(TN+FN)); range [−1, 1]; uses all four cells, robust with imbalance. NordicMart tree: 0.28.", "TSK 4.11.2"], ["l10b", "Cost-sensitive decision: the NordicMart numbers.", "Offer €10, lost churner €100. Nobody gets the offer €10,800 · everybody €7,920 · tree at t = 0.5 €8,480 · tree at <b>t = 0.15 €6,460</b>. Lower threshold: recall up, precision usually down.", "TSK 4.11.3"], ["l10b", "Draw a ROC curve by hand.", "Sort by decreasing P(positive); start at (0,0). Positive = step up (1/T<sub>pos</sub>), negative = step right (1/T<sub>neg</sub>), tie = diagonal step; end at (1,1). x = FP rate = FP/T<sub>neg</sub>, y = TP rate = recall.", "TSK 4.11.4"], ["l10b", "AUC: meaning and properties.", "Probability that a random positive gets a higher score than a random negative. 1 perfect, 0.5 random; independent of the threshold and of class proportions. NordicMart tree: 0.71.", "TSK 4.11.4"], ["l10b", "ROC vs precision–recall curve.", "With rare positives the PR curve is more informative; its random level is the positive rate (12% for NordicMart). Summary number: average precision (0.29).", "TSK 4.11.4"], ["l11", "Naive Bayes: rule, assumption, training, weather example.", "Pr(c | E) ∝ Pr(c) Π Pr(E<sub>i</sub> | c): attributes independent <i>given the class</i>. Training = counting. New weather day: likelihood yes 0.0053, no 0.0206 → Pr(yes) = <b>20.5%</b>.", "TSK 4.4"], ["l11", "Zero-frequency problem and Laplace smoothing.", "One zero count vetoes all other evidence. Pr(d = v | c) ≈ (count + α)/(class count + α·V), α = 1. Pr(overcast | no) = (0+1)/(5+3) = <b>0.125</b>.", "TSK 4.4"], ["l11", "Gaussian NB, and the duplicated-attribute failure.", "Numeric attribute: per class, mean μ and std σ, use the normal density in place of the frequency. A duplicated attribute (°F and °C) counts the same evidence twice and pushes probabilities to the extremes (0.57 yes became 0.37).", "TSK 4.4"], ["l11", "Log loss: formula, reference, why use it.", "ℓ = −ln(probability given to the true class), averaged; lower is better. 0.9 → 0.11, 0.5 → 0.69, 0.1 → 2.30. Constant 12% gives 0.37 on NordicMart. AUC sees only the ranking; log loss checks whether “30%” really means 30%.", "TSK 4.6"], ["l11", "Logistic regression in one line, and how to read a weight.", "z = w·x + w<sub>0</sub>; Pr(y=1|x) = 1/(1+e<sup>−z</sup>); the log-odds are linear in x. Weight w<sub>j</sub>: odds × e<sup>w<sub>j</sub></sup> per +1 (one std if standardized). Days since last buy: +0.85 → odds about ×2.3.", "TSK 4.6"], ["l11", "How are LR weights learned? What does C do?", "Maximum likelihood = minimise the average log loss (convex, one minimum). <code>C</code> is the inverse of the penalty on large weights: <b>small C = strong regularization</b>. Standardize first, inside a Pipeline.", "TSK 4.6"], ["l11", "One-vs-rest vs one-vs-one.", "OVR: C problems, class vs all (each imbalanced), highest score wins. OVO: C(C−1)/2 problems, one per pair, voting. 10 classes: 10 vs 45. <code>SVC</code> uses OVO internally.", "TSK 4.12"], ["l11", "kNN: model, hyperparameters, and the step before using it.", "The training set is the model (lazy). Majority vote of the k nearest under a distance (Euclidean default). <b>Standardize</b>, or the attribute with the largest numbers decides. Small k overfits; k = 401 on NordicMart raised no alarm at all. Cost <i>O</i>(N·D) per prediction.", "TSK 4.3"], ["l11", "NordicMart scoreboard: who wins and why?", "CV AUC: tree 0.76, NB 0.79, LR 0.82, kNN 0.82 (within noise) → prefer the simpler, interpretable LR. Cost at t = 0.15: LR €5,800 is the lowest. NB ranks well, but its log loss 0.52 is above the 0.37 constant guess.", "TSK 3.5"]];
+  document.getElementById('plan0').textContent = `0–10 min · ${CARDS.length} cards`;
+  let order = CARDS.map((_,i)=>i), marks = store.get('marks2', {}), reviewOnly = false, pos = 0, flipped = false, topic = 'all';
+  const fsel = document.getElementById('ftopic');
+  fsel.innerHTML = '<option value="all">All topics</option>' + Object.entries(T).map(([k,v])=>`<option value="${k}">${v[1]}</option>`).join('');
+  fsel.onchange = ()=>{ topic = fsel.value; pos=0; flipped=false; renderCard(); };
+  const fcard = document.getElementById('fcard');
+  const list = ()=> order.filter(i => (topic==='all' || CARDS[i][0]===topic) && (!reviewOnly || marks[i]==='again'));
+  function renderCard(){
+    const L = list(), st = Object.values(marks);
+    const known = st.filter(v=>v==='know').length, again = st.filter(v=>v==='again').length;
+    document.getElementById('fstats').textContent = `Known ${known} · Review ${again} · Unmarked ${CARDS.length-known-again}`;
+    document.getElementById('fbar').style.width = (known/CARDS.length*100)+'%';
+    if(!L.length){ fcard.innerHTML = '<span class="side">Nothing here</span><span class="q">No cards match this filter.</span><span class="ref">Switch the review pile off or pick another topic.</span>'; document.getElementById('fcount').textContent='0 / 0'; return; }
+    if(pos >= L.length) pos = L.length-1; if(pos < 0) pos = 0;
+    const i = L[pos], c = CARDS[i], t = T[c[0]];
+    const m = marks[i] ? (marks[i]==='know' ? ' · marked “got it”' : ' · marked “review again”') : '';
+    fcard.classList.toggle('flipped', flipped);
+    fcard.innerHTML = `<span class="fmeta"><span class="tag ${t[0]}">${t[1]}</span><span class="side">${flipped?'Answer':'Question'}${m}</span></span>` + (flipped ? `<span class="a">${c[2]}</span>` : `<span class="q">${c[1]}</span>`) + `<span class="ref">${c[3]}${flipped?'':' · tap to flip'}</span>`;
+    document.getElementById('fcount').textContent = `${pos+1} / ${L.length}`;
+  }
+  function go(d){ flipped=false; pos += d; const L=list(); if(pos>=L.length) pos=0; if(pos<0) pos=L.length-1; renderCard(); }
+  function mark(v){ const L=list(); if(!L.length) return; marks[L[pos]] = v; store.set('marks2', marks); if(reviewOnly && v==='know'){ flipped=false; renderCard(); } else go(1); }
+  fcard.addEventListener('click', ()=>{ flipped=!flipped; renderCard(); });
+  document.getElementById('fprev').onclick = ()=>go(-1);
+  document.getElementById('fnext').onclick = ()=>go(1);
+  document.getElementById('fknow').onclick = ()=>mark('know');
+  document.getElementById('fagain').onclick = ()=>mark('again');
+  document.getElementById('fshuffle').onclick = ()=>{ for(let i=order.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[order[i],order[j]]=[order[j],order[i]];} pos=0; flipped=false; renderCard(); };
+  const fmode = document.getElementById('fmode');
+  fmode.onclick = ()=>{ reviewOnly=!reviewOnly; fmode.setAttribute('aria-pressed', String(reviewOnly)); fmode.classList.toggle('primary', reviewOnly); pos=0; flipped=false; renderCard(); };
+  document.addEventListener('keydown', e=>{
+    if(document.getElementById('pane-0').hidden) return;
+    if(['TEXTAREA','INPUT','SELECT'].includes(document.activeElement.tagName)) return;
+    if(e.key===' '){ e.preventDefault(); flipped=!flipped; renderCard(); }
+    else if(e.key==='ArrowRight') go(1); else if(e.key==='ArrowLeft') go(-1);
+  });
+  renderCard();
+
+  /* MCQ */
+  const Q = [["l08", "A classifier scores 95% accuracy on a test set where 95% of the records are negative. What can you conclude?", ["It is an excellent classifier", "It does no better than always predicting “negative”; check recall and precision", "It is overfitted", "It needs a larger training set"], 1, "The majority-class baseline already gets 95%. Accuracy alone says nothing about the rare class."], ["l08", "A node holds 4 records: 3 of class A, 1 of class B. Its entropy is…", ["0.50", "0.75", "0.811", "1.00"], 2, "−(0.75·log<sub>2</sub>0.75 + 0.25·log<sub>2</sub>0.25) = 0.311 + 0.5 = 0.811. It would be 1 only for a 2-2 split."], ["l08", "Weather data: H(play) = 0.940, and the weighted entropy after splitting on outlook is 0.694. The information gain is…", ["0.247", "0.694", "0.940", "1.634"], 0, "IG = H(parent) − weighted H(children) = 0.940 − 0.694 ≈ 0.247 (0.246 from the rounded figures)."], ["l09", "Iris tree: training error 1.33%, test error 16%. After pruning to depth 2: training 4%, test 8%. What does this show?", ["Pruning is harmful because training error went up", "The full tree overfitted the two altered labels; pruning traded training error for test error", "The test set is too easy", "The pruned tree is underfitted"], 1, "Higher training error but lower test error is the signature of removing overfitting."], ["l09", "A node has 5 records of class yes and 5 of class no. Its Gini index is…", ["0", "0.25", "0.5", "1"], 2, "1 − 0.5<sup>2</sup> − 0.5<sup>2</sup> = 0.5, the maximum for two classes (1 − 1/C)."], ["l09", "Which of these is learned from the data, rather than set as a hyperparameter?", ["max_depth", "ccp_alpha", "The threshold 4.75 in a node “petal length ≤ 4.75”", "min_samples_leaf"], 2, "Tests and thresholds of the nodes are the tree’s parameters. The others are chosen by us."], ["l09", "NordicMart ages are filled with the mean of all 3000 rows, then the data are split. What is wrong?", ["Nothing; the mean is a constant", "Data leakage: the test rows influenced the fill-in value", "The mean should be the median", "The split should be stratified"], 1, "Split first, compute the mean on training rows only, apply that number to the test rows."], ["l09", "A churn tree has “days since last buy &gt; 90” at the root with near-maximum IG. Churn is defined as no purchase in the 90 days after the snapshot. First check?", ["Raise max_depth", "Target leakage: is this feature known at prediction time?", "Switch from entropy to Gini", "Add more folds"], 1, "A value measured today leaks the future. Symptoms: too-good result and a single dominant attribute."], ["l10a", "You pick the best of 20 random-guess models by its accuracy on a 50-record test set and report it as the final estimate. Why is it unreliable?", ["The test set is too small to compute accuracy", "Selecting by the test score makes that score optimistic (winner’s curse)", "Random models cannot be compared", "Accuracy is the wrong metric"], 1, "The best of many noisy scores is biased upward (about 63% when every model is truly 50%). Choose on validation or CV, report on test."], ["l10a", "Grid: max_depth {3, 5, 8} × criterion {gini, entropy}, 5-fold CV, then a final refit on all training data. How many trainings?", ["10", "11", "30", "31"], 3, "6 configurations × 5 folds = 30, plus 1 final training = 31 (c·k + 1)."], ["l10a", "CV accuracy (mean ± std) by depth: 1: 84.0±0.5 · 2: 88.5±0.5 · 3: 89.0±0.5 · 4: 89.2±0.5 · 5: 88.9±0.5. Which depth does the 1-std rule pick?", ["2", "3", "4", "5"], 1, "Best is depth 4 at 89.2; within one std means ≥ 88.7: depths 3, 4, 5. The simplest of these is 3."], ["l10a", "N = 100 test records, f = 10%: the 95% half-width is about 5.9 points. With N = 400 and the same f it is about…", ["1.5 points", "2.9 points", "5.9 points", "11.8 points"], 1, "Width goes as 1/√N; 4× the data halves it: 1.96·√(0.1·0.9/400) ≈ 0.029."], ["l10b", "NordicMart test matrix: TP 26, FN 82, FP 28, TN 764. The recall of churners is…", ["48.1%", "24.1%", "96.5%", "87.8%"], 1, "Recall = TP/(TP+FN) = 26/108 = 24.1%. 48.1% is the precision, 96.5% the specificity, 87.8% the accuracy."], ["l10b", "Which average equals the accuracy in a multi-class problem?", ["Macro recall", "Micro-averaged recall (equal to weighted recall)", "Macro precision", "Macro F1"], 1, "Micro pools all decisions; weighted recall weights each class by its size. Both equal accuracy."], ["l10b", "Cohen’s κ of a classifier is 0. This means…", ["It is always wrong", "Its agreement with the true labels is no better than chance", "It has 50% accuracy", "It has perfect precision"], 1, "κ = 0: as good as a random classifier with the same predicted proportions. The majority baseline has κ = 0."], ["l10b", "Positives are 1% of the data. Which curve is more informative than the ROC curve here?", ["The learning curve", "The precision–recall curve", "The cumulative-cost curve", "The tree depth curve"], 1, "With rare positives the many negatives hide poor precision in ROC. PR has a clear random level: the positive rate."], ["l10b", "You lower the decision threshold from 0.5 to 0.15. On the ROC curve you move…", ["Towards the upper right: both TP rate and FP rate rise", "Towards the lower left", "Straight up only", "Nowhere; the curve is fixed"], 0, "More records are predicted positive: recall and false alarms both go up. The curve itself is fixed; the threshold picks a point on it."], ["l11", "Weather data: overcast never occurs with “no” (0 of 5), and the attribute has 3 values. With Laplace α = 1, Pr(overcast | no) is…", ["0", "0.125", "0.2", "0.333"], 1, "(0 + 1)/(5 + 1·3) = 0.125. Smoothing keeps one zero from vetoing all other evidence."], ["l11", "In logistic regression with standardized attributes, a weight of +0.85 means…", ["The probability grows by 0.85 per standard deviation", "The odds are multiplied by about 2.3 per standard deviation", "The probability is multiplied by 2.3", "The attribute explains 85% of the variance"], 1, "The log-odds change by w; the odds are multiplied by e<sup>0.85</sup> ≈ 2.34, all other attributes fixed."], ["l11", "kNN on raw NordicMart data: spend in euros (std 685), tickets in single digits (std 0.8). What goes wrong?", ["Nothing, kNN is scale free", "The attribute with the large numbers dominates the distance", "kNN cannot output a class", "Training takes too long"], 1, "Without scaling, 100 euros outweighs 3 tickets. Standardize, learning μ and σ on training data only."], ["l11", "10 classes, handled with binary classifiers. How many binary problems for one-vs-rest and one-vs-one?", ["10 and 10", "10 and 45", "45 and 10", "20 and 90"], 1, "OVR: C = 10. OVO: C(C−1)/2 = 45."], ["l11", "Naive Bayes on NordicMart: test AUC 0.76 but log loss 0.52, above the 0.37 of a constant 12% guess. Interpretation?", ["It ranks well, but its probabilities are too extreme (dependent attributes count evidence twice)", "It ranks badly and is well calibrated", "Both are fine", "The log loss is a bug"], 0, "AUC judges ranking, log loss judges the probability values. Related attributes (store-only and web sessions) are counted more than once."]];
+  document.getElementById('plan1').textContent = `10–25 min · ${Q.length} questions`;
+  let answers = store.get('mcq2', {});
+  const mlist = document.getElementById('mlist');
+  function renderMCQ(){
+    mlist.innerHTML = ''; let right = 0, done = 0;
+    Q.forEach((q, qi)=>{
+      const t = T[q[0]], a = answers[qi];
+      if(a !== undefined){ done++; if(a===q[3]) right++; }
+      const el = document.createElement('div'); el.className='mcq';
+      el.innerHTML = `<div class="qh"><span class="num">${String(qi+1).padStart(2,'0')}</span><span class="tag ${t[0]}">${t[1]}</span></div><p class="stem">${q[1]}</p>`;
+      const opts = document.createElement('div'); opts.className='opts';
+      q[2].forEach((o, oi)=>{
+        const b = document.createElement('button'); b.className='opt'; b.id=`q${qi}o${oi}`;
+        b.innerHTML = `<span class="k">${'ABCD'[oi]}</span><span>${o}</span>`;
+        if(a !== undefined){ b.disabled = true; if(oi===q[3]) b.classList.add('right'); else if(oi===a) b.classList.add('wrong'); }
+        b.addEventListener('click', ()=>{ answers[qi]=oi; store.set('mcq2', answers); renderMCQ(); const n=document.getElementById(`q${qi}o${oi}`); if(n) n.focus({preventScroll:true}); });
+        opts.appendChild(b);
+      });
+      el.appendChild(opts);
+      if(a !== undefined){ const w = document.createElement('p'); w.className='why'; w.innerHTML = `<b>${a===q[3]?'Correct.':'Not quite. Answer: '+'ABCD'[q[3]]+'.'}</b> ${q[4]}`; el.appendChild(w); }
+      mlist.appendChild(el);
+    });
+    document.getElementById('mscore').textContent = `Score ${right} / ${done} answered · ${Q.length} total`;
+  }
+  document.getElementById('mreset').onclick = ()=>{ answers = {}; store.set('mcq2', answers); renderMCQ(); };
+  renderMCQ();
+
+  /* written */
+  const nW = document.querySelectorAll('.prob:not(.bonus):not(.weak)').length;
+  document.getElementById('plan2').textContent = `25–60 min · ${nW} problems + bonus`;
+  document.querySelectorAll('textarea[id^="ta-"]').forEach(ta=>{ const key = ta.id+'v2'; ta.value = store.get(key, ''); ta.addEventListener('input', ()=>store.set(key, ta.value)); });
+  const rates = store.get('rates2', {});
+  document.querySelectorAll('.selfrate').forEach(box=>{
+    const id = box.dataset.for, btns = [...box.querySelectorAll('button')];
+    const sync = ()=>btns.forEach(b=>b.setAttribute('aria-pressed', String(rates[id]===b.dataset.r)));
+    btns.forEach(b=>b.addEventListener('click', ()=>{ rates[id] = rates[id]===b.dataset.r ? null : b.dataset.r; store.set('rates2', rates); sync(); }));
+    sync();
+  });
+})();
+</script>
+</body>
+</html>
