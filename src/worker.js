@@ -1,6 +1,6 @@
-// Password gate for the whole site (Cloudflare Pages Functions).
-// The password is NOT in the repo: set SITE_PASSWORD as a secret in
-// Pages > Settings > Variables and Secrets.
+// Password gate + static site, as a Cloudflare Worker with static assets.
+// The password is NOT in the repo: add SITE_PASSWORD as a secret in
+// the Worker > Settings > Variables and Secrets.
 
 const COOKIE = "unibo_auth";
 const MAX_AGE = 60 * 60 * 24 * 30; // 30 days
@@ -51,33 +51,38 @@ ${failed ? '<div class="err">Wrong password, try again.</div>' : ""}
   });
 }
 
-export async function onRequest(context) {
-  const { request, env, next } = context;
-  if (!env.SITE_PASSWORD) {
-    return new Response("SITE_PASSWORD is not configured.", { status: 500 });
-  }
-  const token = await sha256("unibo-ai-study:" + env.SITE_PASSWORD);
-  const url = new URL(request.url);
-
-  if (request.method === "POST" && url.pathname === "/__login") {
-    const form = await request.formData();
-    const given = await sha256("unibo-ai-study:" + String(form.get("password") || ""));
-    const target = safeNext(form.get("next"));
-    if (given === token) {
-      return new Response(null, {
-        status: 303,
-        headers: {
-          Location: target,
-          "Set-Cookie": `${COOKIE}=${token}; Path=/; Max-Age=${MAX_AGE}; HttpOnly; Secure; SameSite=Lax`,
-          "Cache-Control": "no-store",
-        },
-      });
+export default {
+  async fetch(request, env) {
+    if (!env.SITE_PASSWORD) {
+      return new Response("SITE_PASSWORD is not configured.", { status: 500 });
     }
-    return loginPage(target, true);
-  }
+    const token = await sha256("unibo-ai-study:" + env.SITE_PASSWORD);
+    const url = new URL(request.url);
 
-  if (readCookie(request, COOKIE) === token) {
-    return next();
-  }
-  return loginPage(url.pathname + url.search, false);
-}
+    if (request.method === "POST" && url.pathname === "/__login") {
+      const form = await request.formData();
+      const given = await sha256("unibo-ai-study:" + String(form.get("password") || ""));
+      const target = safeNext(form.get("next"));
+      if (given === token) {
+        return new Response(null, {
+          status: 303,
+          headers: {
+            Location: target,
+            "Set-Cookie": `${COOKIE}=${token}; Path=/; Max-Age=${MAX_AGE}; HttpOnly; Secure; SameSite=Lax`,
+            "Cache-Control": "no-store",
+          },
+        });
+      }
+      return loginPage(target, true);
+    }
+
+    if (readCookie(request, COOKIE) !== token) {
+      return loginPage(url.pathname + url.search, false);
+    }
+
+    const res = await env.ASSETS.fetch(request);
+    const out = new Response(res.body, res);
+    out.headers.set("X-Robots-Tag", "noindex, nofollow");
+    return out;
+  },
+};
